@@ -28,9 +28,6 @@
     text-align: left;
     font-weight: 600; /* Slightly bolder header */
     color: #495057;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     border-right: 1px solid #dee2e6;
 }
 
@@ -63,9 +60,6 @@
     /* width is set inline */
     padding: 9px 12px; /* Adjusted padding */
     border-right: 1px solid #e9ecef; /* Lighter cell border */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     display: flex; /* Align content vertically if needed */
     align-items: center;
     font-size: 0.9rem; /* Slightly smaller cell font */

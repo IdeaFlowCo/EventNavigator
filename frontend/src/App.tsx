@@ -7,6 +7,7 @@ import { DataProvider, useData } from "@/context/DataContext";
 import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
+import ResourcesSection from "@/components/ResourcesSection"; // Import the new component
 import { HelpCircle } from "lucide-react"; // Import the HelpCircle icon
 // Placeholder icons - consider using an icon library like react-icons
 // const GithubIcon = () => <svg>...</svg>; // Commented out for now
@@ -17,7 +18,9 @@ function AppLayout() {
     const { setData } = useData();
     const [activeTab, setActiveTab] = useState<"url" | "upload">("url");
     const [query, setQuery] = useState<string>("");
-    const [sheetUrl, setSheetUrl] = useState<string>("");
+    const [sheetUrl, setSheetUrl] = useState<string>(
+        "https://docs.google.com/spreadsheets/d/1QQBVamDD0fi6DZiHLR1dDCkUq36KNM3k/edit?gid=894876008#gid=894876008"
+    );
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -168,20 +171,24 @@ function AppLayout() {
                 <div className="header-content">
                     {/* Apply class name for Logo/Title */}
                     <div className="logo-title">
-                        <svg // Placeholder SVG - Add relevant path
+                        <svg // Simple Burning Man stick figure
                             fill="none"
                             stroke="currentColor"
+                            strokeWidth="2"
                             viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            ></path>
+                            {/* Head */}
+                            <circle cx="12" cy="5" r="2" />
+                            {/* Body */}
+                            <line x1="12" y1="7" x2="12" y2="15" />
+                            {/* Arms */}
+                            <line x1="8" y1="9" x2="16" y2="9" />
+                            {/* Legs */}
+                            <line x1="12" y1="15" x2="9" y2="19" />
+                            <line x1="12" y1="15" x2="15" y2="19" />
                         </svg>
-                        QueryMySheet
+                        BRC Navigator
                     </div>
                     {/* Apply class name for Nav */}
                     <nav className="app-nav">
@@ -223,10 +230,11 @@ function AppLayout() {
             <main className="main-content">
                 {/* Apply class name for Intro Section */}
                 <div className="intro-section">
-                    <h1>Query your spreadsheets using natural language</h1>
+                    <h1>Burning Man 2025: Tomorrow Today</h1>
                     <p>
-                        This tool lets you ask questions about your data in
-                        plain English and get instant results.
+                        Discover art installations, workshops, performances, and
+                        gatherings across the playa that match your interests
+                        and expand your consciousness.
                     </p>
                 </div>
 
@@ -246,6 +254,8 @@ function AppLayout() {
                 />
 
                 <DataTable />
+
+                <ResourcesSection />
             </main>
 
             {/* Apply class name for Footer */}
@@ -253,10 +263,10 @@ function AppLayout() {
                 {/* Apply class name for Footer Content */}
                 <div className="footer-content">
                     <p>
-                        QueryMySheet is an open-source project.{" "}
+                        BRC Navigator is an open-source project.{" "}
                         {/* Apply class name for Footer Link */}
                         <a
-                            href="https://github.com/your-repo"
+                            href="https://github.com/IdeaFlowCo/BRCNavigator"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="footer-link"

@@ -1,6 +1,6 @@
-# QueryMySheet
+# BRC Navigator
 
-Query your spreadsheets (Google Sheets, CSV, Excel) using natural language. This tool lets you ask questions about your data in plain English and get instant results.
+Navigate Burning Man event listings using natural language. This tool lets you ask questions about event data (from Google Sheets, CSV, or Excel) in plain English and get instant results.
 
 ## Features
 
@@ -22,8 +22,8 @@ Query your spreadsheets (Google Sheets, CSV, Excel) using natural language. This
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/IdeaFlowCo/QueryMySheet.git
-    cd QueryMySheet
+    git clone https://github.com/IdeaFlowCo/BRCNavigator.git
+    cd BRCNavigator
     ```
 
 2.  **Set up Frontend:**
@@ -45,9 +45,9 @@ Query your spreadsheets (Google Sheets, CSV, Excel) using natural language. This
 
 ## How it Works
 
-1.  **Provide Your Data:** Either paste a Google Sheet URL (ensure it's publicly accessible or you have permission) or upload a CSV/Excel file.
-2.  **Ask a Question:** Type your question about the data in the input box (e.g., "show me all employees hired after 2020", "what are the total sales for Q3?").
-3.  **Get Results:** Click "Go". The application will process your sheet data and your question, displaying the relevant results in a table below.
+1.  **Provide Event Data:** Either paste a Google Sheet URL (ensure it's publicly accessible or you have permission) containing event listings or upload a CSV/Excel file.
+2.  **Ask a Question:** Type your question about the events in the input box (e.g., "show me all sound camps near 9:00 & Esplanade", "what events are happening on Tuesday night?", "find workshops related to sustainability").
+3.  **Get Results:** Click "Go". BRC Navigator will process the event data and your question, displaying the relevant results in a table below.
 
 ## Contributing
 

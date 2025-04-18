@@ -1,5 +1,99 @@
 import openai from "../openaiClient";
 
+const CHUNK_SIZE = 150; // Max rows per LLM call
+
+// Helper function to process a single chunk
+const processChunk = async (
+    query: string,
+    headers: string[],
+    chunk: string[][],
+    offset: number // Original starting index of this chunk
+): Promise<number[]> => {
+    // Prepare data for the prompt (1-based indexing for rows relative to original data)
+    const formattedHeaders = JSON.stringify(headers);
+    const formattedRows = chunk
+        .map(
+            (row, index) => `Row ${offset + index + 1}: ${JSON.stringify(row)}`
+        ) // Use original index
+        .join("\n");
+
+    const prompt = `instructions: find rows related to the user's query. consider each row individually and how relevant it is. come up with a relevance score from 0.0-1.0.
+Headers: ${formattedHeaders}
+Rows:\n${formattedRows}
+Query: find me events related to '${query}'.
+Output: your output should be a JSON array of row indices, 1-indexed, relative to the original data provided in this prompt. eg [${
+        offset + 1
+    }, ${
+        offset + 2
+    }, ...] Only return indices that match the query. You could measure this by any results with a relevance score of 0.7 or greater. Respond ONLY with the JSON array.`;
+
+    console.log(
+        `Processing chunk starting at original index ${
+            offset + 1
+        }. Sending prompt to LLM...`
+    );
+
+    try {
+        const resp = await openai.chat.completions.create({
+            model: "gpt-4.1-mini-2025-04-14",
+            messages: [{ role: "user", content: prompt }],
+        });
+
+        const content = resp.choices?.[0]?.message?.content?.trim() || "";
+        console.log(
+            `LLM response for chunk starting at ${offset + 1}:`,
+            content
+        );
+
+        if (!content) {
+            console.error(
+                `LLM returned empty content for chunk starting at ${
+                    offset + 1
+                }.`
+            );
+            return [];
+        }
+
+        // Attempt to parse the JSON array response
+        let indices: number[] = [];
+        try {
+            const cleanedContent = content.replace(/```json|```/g, "").trim();
+            indices = JSON.parse(cleanedContent);
+            if (!Array.isArray(indices) || indices.some(isNaN)) {
+                throw new Error(
+                    "Parsed content is not a valid array of numbers."
+                );
+            }
+            // Validate indices are within the expected original range for this chunk
+            indices = indices.filter(
+                (index) => index > offset && index <= offset + chunk.length
+            );
+        } catch (parseError) {
+            console.error(
+                `Failed to parse LLM response for chunk starting at ${
+                    offset + 1
+                }:`,
+                parseError,
+                "Raw content:",
+                content
+            );
+            return [];
+        }
+
+        console.log(
+            `Parsed original indices for chunk starting at ${offset + 1}:`,
+            indices
+        );
+        return indices; // Return original 1-based indices
+    } catch (error) {
+        console.error(
+            `Error processing chunk starting at ${offset + 1}:`,
+            error
+        );
+        return [];
+    }
+};
+
 export const runSearch = async (
     query: string,
     headers: string[],
@@ -9,77 +103,48 @@ export const runSearch = async (
         console.log("Empty query, returning all rows.");
         return rows;
     }
+    if (!rows || rows.length === 0) {
+        console.log("No rows to search.");
+        return [];
+    }
 
-    // Prepare data for the prompt (1-based indexing for rows)
-    const formattedHeaders = JSON.stringify(headers);
-    const formattedRows = rows
-        .map((row, index) => `Row ${index + 1}: ${JSON.stringify(row)}`)
-        .join("\n");
+    const chunks: { chunk: string[][]; offset: number }[] = [];
+    for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+        chunks.push({
+            chunk: rows.slice(i, i + CHUNK_SIZE),
+            offset: i, // 0-based offset
+        });
+    }
 
-    const prompt = `instructions: find rows related to the user's query. consider each row individually and how relevant it is. come up with a relevance score from 0.0-1.0.
-Headers: ${formattedHeaders}
-Rows:\n${formattedRows}
-Query: find me events related to '${query}'.
-Output: your output should be a JSON array of row indices, 1-indexed. eg [1,2,3,4...] Only return indices that match the query. You could measure this by any results with a relevance score of 0.7 or greater. Respond ONLY with the JSON array.`;
-
-    console.log("Sending prompt to LLM:", prompt);
+    console.log(
+        `Split data into ${chunks.length} chunks of size up to ${CHUNK_SIZE}.`
+    );
 
     try {
-        const resp = await openai.chat.completions.create({
-            // Assuming a model compatible with the prompt structure
-            // You might need to adjust the model name based on availability
-            model: "gpt-4.1-mini-2025-04-14", // Updated model
-            messages: [{ role: "user", content: prompt }],
-            // Adjust temperature/max_tokens if needed
-            // temperature: 0.2,
-        });
+        const chunkPromises = chunks.map(({ chunk, offset }) =>
+            processChunk(query, headers, chunk, offset)
+        );
 
-        const content = resp.choices?.[0]?.message?.content?.trim() || "";
-        console.log("Received LLM response:", content);
+        const results = await Promise.all(chunkPromises);
 
-        if (!content) {
-            console.error("LLM returned empty content.");
-            // Fallback or specific error handling needed here
-            // For now, returning empty results on error
-            return [];
-        }
+        // Aggregate all indices from different chunks
+        const allIndices = results.flat();
+        console.log("Aggregated 1-based indices from all chunks:", allIndices);
 
-        // Attempt to parse the JSON array response
-        let indices: number[] = [];
-        try {
-            // Clean potential markdown fences
-            const cleanedContent = content.replace(/```json|```/g, "").trim();
-            indices = JSON.parse(cleanedContent);
-            if (!Array.isArray(indices) || indices.some(isNaN)) {
-                throw new Error(
-                    "Parsed content is not a valid array of numbers."
-                );
-            }
-        } catch (parseError) {
-            console.error(
-                "Failed to parse LLM response as JSON array:",
-                parseError,
-                "Raw content:",
-                content
-            );
-            // Fallback or specific error handling needed here
-            // For now, returning empty results on error
-            return [];
-        }
+        // Ensure uniqueness and sort
+        const uniqueIndices = [...new Set(allIndices)].sort((a, b) => a - b);
+        console.log("Unique 1-based indices:", uniqueIndices);
 
-        console.log("Parsed indices (1-based):", indices);
-
-        // Filter rows based on the 1-based indices from the LLM
-        const filteredRows = indices
+        // Filter rows based on the unique 1-based indices from the LLM
+        const filteredRows = uniqueIndices
             .map((index) => rows[index - 1]) // Convert 1-based index to 0-based
-            .filter((row) => row !== undefined); // Filter out potential undefined entries if index is out of bounds
+            .filter((row): row is string[] => row !== undefined); // Type guard for filtering
 
-        console.log("Filtered rows count:", filteredRows.length);
+        console.log("Final filtered rows count:", filteredRows.length);
         return filteredRows;
     } catch (error) {
-        console.error("Error during LLM search:", error);
+        console.error("Error during parallel chunk processing:", error);
         // Fallback or specific error handling needed here
-        // For now, returning empty results on error
-        return [];
+        return []; // Return empty results on top-level error
     }
 };

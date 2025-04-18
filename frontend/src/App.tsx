@@ -15,7 +15,13 @@ import { HelpCircle } from "lucide-react"; // Import the HelpCircle icon
 
 // Define the main layout and logic component
 function AppLayout() {
-    const { setData } = useData();
+    const {
+        headers,
+        isDisplayingFullData,
+        setData,
+        runSearchQuery,
+        loading: isSearching,
+    } = useData();
     const [activeTab, setActiveTab] = useState<"url" | "upload">("url");
     const [query, setQuery] = useState<string>("");
     const [aboutMe, setAboutMe] = useState<string>(""); // Add state for About Me
@@ -24,7 +30,6 @@ function AppLayout() {
     );
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLoadingSpreadsheet, setIsLoadingSpreadsheet] =
         useState<boolean>(false);
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
@@ -52,7 +57,9 @@ function AppLayout() {
         setFileName(newFile ? newFile.name : null);
     };
 
-    const parseAndSetData = (dataToParse: string[][] | string) => {
+    const parseData = (
+        dataToParse: string[][] | string
+    ): { headers: string[]; rows: string[][] } | null => {
         try {
             let parsedData: string[][] | null = null;
             if (typeof dataToParse === "string") {
@@ -67,12 +74,11 @@ function AppLayout() {
 
             if (!parsedData || parsedData.length < 1) {
                 alert("Sheet appears to be empty or inaccessible.");
-                return false;
+                return null;
             }
             const headers = parsedData[0];
             const rows = parsedData.slice(1);
-            setData(headers, rows);
-            return true;
+            return { headers, rows };
         } catch (error) {
             console.error("Error parsing data:", error);
             alert(
@@ -80,7 +86,7 @@ function AppLayout() {
                     error instanceof Error ? error.message : String(error)
                 }`
             );
-            return false;
+            return null;
         }
     };
 
@@ -97,8 +103,7 @@ function AppLayout() {
     const handleSubmit = async () => {
         setIsLoadingSpreadsheet(true);
         setData([], []);
-        let success = false;
-        setIsLoading(false); // Reset isLoading initially
+        let parsedResult: { headers: string[]; rows: string[][] } | null = null;
 
         // Combine aboutMe and query for the final search
         const finalQuery = aboutMe
@@ -120,7 +125,7 @@ function AppLayout() {
                 if (!res.ok)
                     throw new Error(`Failed to fetch sheet: ${res.statusText}`);
                 const text = await res.text();
-                success = parseAndSetData(text);
+                parsedResult = parseData(text);
             } catch (error) {
                 console.error("Error fetching or parsing URL:", error);
                 alert(
@@ -134,7 +139,7 @@ function AppLayout() {
             try {
                 if (ext === "csv") {
                     const text = await file.text();
-                    success = parseAndSetData(text);
+                    parsedResult = parseData(text);
                 } else if (ext === "xls" || ext === "xlsx") {
                     const fileData = await file.arrayBuffer();
                     const workbook = XLSX.read(new Uint8Array(fileData), {
@@ -146,7 +151,7 @@ function AppLayout() {
                         header: 1,
                         raw: false,
                     });
-                    success = parseAndSetData(json);
+                    parsedResult = parseData(json);
                 } else {
                     alert("Unsupported file type.");
                 }
@@ -162,17 +167,20 @@ function AppLayout() {
 
         setIsLoadingSpreadsheet(false);
 
-        if (success) {
-            // Use finalQuery here instead of query
-            console.log("Spreadsheet loaded successfully. Query:", finalQuery);
-            // Simulate analysis time if needed for isLoading state
-            setIsLoading(true);
-            // Here you would ideally send the finalQuery to your backend/analysis logic
-            // For now, just logging and simulating delay
-            setTimeout(() => setIsLoading(false), 1500); // Example delay
+        if (parsedResult) {
+            console.log("Spreadsheet loaded successfully. Setting data.");
+            setData(parsedResult.headers, parsedResult.rows);
+
+            if (finalQuery.trim()) {
+                console.log("Query detected. Running search:", finalQuery);
+                await runSearchQuery(finalQuery);
+                console.log("Search finished.");
+            } else {
+                console.log("No query provided. Displaying full spreadsheet.");
+            }
         } else {
             console.log("Failed to load or parse spreadsheet.");
-            setIsLoading(false); // Ensure loading is false on failure
+            setData([], []);
         }
     };
 
@@ -222,7 +230,7 @@ function AppLayout() {
                         </button>
                         {/* Apply class name for Nav Link */}
                         <a
-                            href="https://github.com/your-repo"
+                            href="https://github.com/IdeaFlowCo/BRCNavigator"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="nav-link"
@@ -257,17 +265,28 @@ function AppLayout() {
                     sheetUrl={sheetUrl}
                     file={file}
                     fileName={fileName}
-                    isLoading={isLoading}
+                    isLoading={isSearching}
+                    isLoadingSpreadsheet={isLoadingSpreadsheet}
                     activeTab={activeTab}
-                    aboutMe={aboutMe} // Pass down aboutMe state
+                    aboutMe={aboutMe}
                     onQueryChange={handleQueryChange}
                     onSheetUrlChange={handleSheetUrlChange}
                     onFileChange={handleFileChange}
                     onTabChange={handleTabChange}
-                    onAboutMeChange={handleAboutMeChange} // Pass down handler
+                    onAboutMeChange={handleAboutMeChange}
                     onSubmit={handleSubmit}
-                    isLoadingSpreadsheet={isLoadingSpreadsheet}
                 />
+
+                {/* Conditional Results Header */}
+                {headers.length > 0 && (
+                    <div className="results-header">
+                        <h2>
+                            {isDisplayingFullData
+                                ? "Full Spreadsheet Data"
+                                : "Search Results"}
+                        </h2>
+                    </div>
+                )}
 
                 <DataTable />
 

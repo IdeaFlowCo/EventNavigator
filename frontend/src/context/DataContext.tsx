@@ -6,6 +6,7 @@ interface DataContextType {
     rows: string[][];
     filteredRows: string[][];
     loading: boolean;
+    isDisplayingFullData: boolean;
     setData: (headers: string[], rows: string[][]) => void;
     runSearchQuery: (query: string) => Promise<void>;
 }
@@ -24,6 +25,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const [filteredRows, setFilteredRows] = useState<string[][]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
+    const isDisplayingFullData = rows === filteredRows;
+
     const setData = (newHeaders: string[], newRows: string[][]) => {
         setHeaders(newHeaders);
         setRows(newRows);
@@ -33,7 +36,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const runSearchQuery = async (query: string) => {
         setLoading(true);
         try {
-            if (!query) {
+            if (!query.trim()) {
                 setFilteredRows(rows);
                 return;
             }
@@ -54,6 +57,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
                 rows,
                 filteredRows,
                 loading,
+                isDisplayingFullData,
                 setData,
                 runSearchQuery,
             }}

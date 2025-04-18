@@ -138,12 +138,12 @@ function QuerySection({
         }
     }, [onFileChange]);
 
-    // Determine if the submit button should be disabled (restored from revert)
+    // Determine if the submit button should be disabled
     const isSubmitDisabled =
-        (isLoading && !isLoadingSpreadsheet) ||
-        !query ||
-        (activeTab === "url" && !sheetUrl) ||
-        (activeTab === "upload" && !file);
+        isLoading ||
+        isLoadingSpreadsheet || // Disable if any loading is happening
+        (activeTab === "url" && !sheetUrl) || // Still require URL if URL tab is active
+        (activeTab === "upload" && !file); // Still require File if Upload tab is active
 
     return (
         // Apply class name for Query Section container

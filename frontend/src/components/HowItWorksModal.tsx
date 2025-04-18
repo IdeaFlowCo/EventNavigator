@@ -62,10 +62,11 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                         <div className="step-text">
                             <h3>2. Ask a Question</h3>
                             <p>
-                                Ask any question about your data in plain
-                                English. For example: "Find all employees in the
-                                Marketing department" or "What were the top 3
-                                sales in Q2?"
+                                Ask any question about the event listings in
+                                plain English. For example: "Find all sound
+                                camps near 9:00 & Esplanade", "What events are
+                                happening on Tuesday night?", or "Show workshops
+                                related to sustainability".
                             </p>
                         </div>
                     </div>

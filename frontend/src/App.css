@@ -168,12 +168,42 @@ body {
     /* md breakpoint */
     .input-grid {
         /* Use minmax to prevent overflow before wrapping/resizing */
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+        /* REMOVED: grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; */
+        /* Kept single column default, specific layouts handled below */
     }
     .input-grid-upload {
-        grid-template-columns: 1fr 1fr; /* Match Tailwind grid for Upload tab */
+        /* REMOVED: grid-template-columns: 1fr 1fr; */
         align-items: flex-start; /* Align items to top for upload */
     }
+}
+
+/* New styles for the restructured layout */
+.input-section-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* Consistent gap */
+}
+
+.about-me-group {
+    /* No special styling needed, takes full width by default */
+}
+
+.two-column-inputs {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column on small screens */
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .two-column-inputs {
+        grid-template-columns: 1fr 1fr; /* Two columns on medium screens and up */
+    }
+}
+
+.submit-area {
+    display: flex;
+    justify-content: flex-end; /* Align button to the right */
+    margin-top: 0.5rem; /* Add some space above the button */
 }
 
 .input-group {

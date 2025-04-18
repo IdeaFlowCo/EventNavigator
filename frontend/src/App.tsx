@@ -18,6 +18,7 @@ function AppLayout() {
     const { setData } = useData();
     const [activeTab, setActiveTab] = useState<"url" | "upload">("url");
     const [query, setQuery] = useState<string>("");
+    const [aboutMe, setAboutMe] = useState<string>(""); // Add state for About Me
     const [sheetUrl, setSheetUrl] = useState<string>(
         "https://docs.google.com/spreadsheets/d/1QQBVamDD0fi6DZiHLR1dDCkUq36KNM3k/edit?gid=894876008#gid=894876008"
     );
@@ -35,6 +36,11 @@ function AppLayout() {
 
     const handleQueryChange = (value: string) => {
         setQuery(value);
+    };
+
+    const handleAboutMeChange = (value: string) => {
+        // Add handler for About Me
+        setAboutMe(value);
     };
 
     const handleSheetUrlChange = (value: string) => {
@@ -94,6 +100,11 @@ function AppLayout() {
         let success = false;
         setIsLoading(false); // Reset isLoading initially
 
+        // Combine aboutMe and query for the final search
+        const finalQuery = aboutMe
+            ? `About me: ${aboutMe}. Looking for: ${query}`
+            : query;
+
         if (activeTab === "url") {
             if (
                 !sheetUrl ||
@@ -152,9 +163,12 @@ function AppLayout() {
         setIsLoadingSpreadsheet(false);
 
         if (success) {
-            console.log("Spreadsheet loaded successfully. Query:", query);
+            // Use finalQuery here instead of query
+            console.log("Spreadsheet loaded successfully. Query:", finalQuery);
             // Simulate analysis time if needed for isLoading state
             setIsLoading(true);
+            // Here you would ideally send the finalQuery to your backend/analysis logic
+            // For now, just logging and simulating delay
             setTimeout(() => setIsLoading(false), 1500); // Example delay
         } else {
             console.log("Failed to load or parse spreadsheet.");
@@ -245,10 +259,12 @@ function AppLayout() {
                     fileName={fileName}
                     isLoading={isLoading}
                     activeTab={activeTab}
+                    aboutMe={aboutMe} // Pass down aboutMe state
                     onQueryChange={handleQueryChange}
                     onSheetUrlChange={handleSheetUrlChange}
                     onFileChange={handleFileChange}
                     onTabChange={handleTabChange}
+                    onAboutMeChange={handleAboutMeChange} // Pass down handler
                     onSubmit={handleSubmit}
                     isLoadingSpreadsheet={isLoadingSpreadsheet}
                 />

@@ -21,10 +21,12 @@ interface QuerySectionProps {
     isLoading: boolean;
     isLoadingSpreadsheet: boolean;
     activeTab: "url" | "upload";
+    aboutMe: string;
     onQueryChange: (value: string) => void;
     onSheetUrlChange: (value: string) => void;
     onFileChange: (file: File | null) => void;
     onTabChange: (value: "url" | "upload") => void;
+    onAboutMeChange: (value: string) => void;
     onSubmit: () => void;
 }
 
@@ -36,10 +38,12 @@ function QuerySection({
     isLoading,
     isLoadingSpreadsheet,
     activeTab,
+    aboutMe,
     onQueryChange,
     onSheetUrlChange,
     onFileChange,
     onTabChange,
+    onAboutMeChange,
     onSubmit,
 }: QuerySectionProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +110,10 @@ function QuerySection({
         onQueryChange(value.trimStart());
     };
 
+    const handleAboutMeChange = (value: string) => {
+        onAboutMeChange(value.trimStart());
+    };
+
     const handleUrlChange = (value: string) => {
         onSheetUrlChange(value.trim());
     };
@@ -169,199 +177,221 @@ function QuerySection({
 
                 {/* Apply class name for Tab Content */}
                 <TabsContent value="url" className="tab-content">
-                    {/* Apply class name for Input Grid */}
-                    <div className="input-grid">
-                        {/* Apply class name for Input Group */}
-                        <div className="input-group">
-                            <Label htmlFor="query">
-                                What are you looking for?
+                    {/* Container for all inputs */}
+                    <div className="input-section-wrapper">
+                        {/* About Me Input Group (Full Width) */}
+                        <div className="input-group about-me-group">
+                            <Label htmlFor="about-me">
+                                About me (optional)
                             </Label>
-                            {/* Apply class name for Query Input Wrapper */}
-                            <div className="query-input-wrapper">
-                                <Input
-                                    id="query"
-                                    ref={queryInputRef}
-                                    value={query}
-                                    onChange={(e) =>
-                                        handleQueryChange(e.target.value)
-                                    }
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="e.g., employees hired after 2020"
-                                    autoFocus
-                                />
-                                {query && (
-                                    // Apply class name for Clear Button
-                                    <button
-                                        type="button"
-                                        onClick={clearQuery}
-                                        className="clear-query-button"
-                                        aria-label="Clear query"
-                                    >
-                                        <X width={16} height={16} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Apply class name for Input Group */}
-                        <div className="input-group">
-                            <Label htmlFor="sheet-url">Google Sheet URL</Label>
                             <Input
-                                id="sheet-url"
-                                ref={urlInputRef}
-                                value={sheetUrl}
+                                id="about-me"
+                                value={aboutMe}
                                 onChange={(e) =>
-                                    handleUrlChange(e.target.value)
+                                    handleAboutMeChange(e.target.value)
                                 }
                                 onKeyDown={handleKeyDown}
-                                placeholder="https://docs.google.com/spreadsheets/d/..."
+                                placeholder="e.g., loves techno, prefers sober parties"
                             />
                         </div>
 
-                        {/* Apply class name for Submit Button container (though CSS targets grid placement) */}
-                        {/* <div className="submit-button-container"> */}
-                        <Button
-                            onClick={onSubmit}
-                            disabled={isSubmitDisabled}
-                            // Apply class name for Submit Button
-                            className="submit-button"
-                        >
-                            {isLoading ? (
-                                <Loader2
-                                    width={16}
-                                    height={16}
-                                    className="spinner"
+                        {/* Container for the two side-by-side inputs */}
+                        <div className="two-column-inputs">
+                            {/* What are you looking for? Input Group */}
+                            <div className="input-group">
+                                <Label htmlFor="query">
+                                    What are you looking for?
+                                </Label>
+                                <div className="query-input-wrapper">
+                                    <Input
+                                        id="query"
+                                        ref={queryInputRef}
+                                        value={query}
+                                        onChange={(e) =>
+                                            handleQueryChange(e.target.value)
+                                        }
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="e.g., sound camps near 8:00 & E"
+                                        autoFocus
+                                    />
+                                    {query && (
+                                        <button
+                                            type="button"
+                                            onClick={clearQuery}
+                                            className="clear-query-button"
+                                            aria-label="Clear query"
+                                        >
+                                            <X width={16} height={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Google Sheet URL Input Group */}
+                            <div className="input-group">
+                                <Label htmlFor="sheet-url">
+                                    Google Sheet URL
+                                </Label>
+                                <Input
+                                    id="sheet-url"
+                                    ref={urlInputRef}
+                                    value={sheetUrl}
+                                    onChange={(e) =>
+                                        handleUrlChange(e.target.value)
+                                    }
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="https://docs.google.com/spreadsheets/d/..."
                                 />
-                            ) : (
-                                <Search width={16} height={16} />
-                            )}
-                            Go
-                            {/* Tooltip can be added via CSS if needed, removed span */}
-                        </Button>
-                        {/* </div> */}
+                            </div>
+                        </div>
+
+                        {/* Submit Button Area */}
+                        <div className="submit-area">
+                            <Button
+                                onClick={onSubmit}
+                                disabled={isSubmitDisabled}
+                                className="submit-button"
+                            >
+                                {isLoading ? (
+                                    <Loader2
+                                        width={16}
+                                        height={16}
+                                        className="spinner"
+                                    />
+                                ) : (
+                                    <Search width={16} height={16} />
+                                )}
+                                Go
+                            </Button>
+                        </div>
                     </div>
                 </TabsContent>
 
                 {/* Apply class name for Tab Content */}
                 <TabsContent value="upload" className="tab-content">
-                    {/* Apply class name for Input Grid (Upload variant) */}
-                    <div className="input-grid input-grid-upload">
-                        {/* Apply class name for Input Group */}
-                        <div className="input-group">
-                            <Label htmlFor="query-upload">
-                                What are you looking for?
+                    {/* Container for all inputs */}
+                    <div className="input-section-wrapper">
+                        {/* About Me Input Group (Full Width) */}
+                        <div className="input-group about-me-group">
+                            <Label htmlFor="about-me-upload">
+                                About me (optional)
                             </Label>
-                            {/* Apply class name for Query Input Wrapper */}
-                            <div className="query-input-wrapper">
-                                <Input
-                                    id="query-upload"
-                                    ref={queryUploadInputRef}
-                                    value={query}
-                                    onChange={(e) =>
-                                        handleQueryChange(e.target.value)
-                                    }
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="e.g., sales numbers for Q1 2023"
-                                />
-                                {query && (
-                                    // Apply class name for Clear Button
-                                    <button
-                                        type="button"
-                                        onClick={clearQuery}
-                                        className="clear-query-button"
-                                        aria-label="Clear query"
+                            <Input
+                                id="about-me-upload"
+                                value={aboutMe}
+                                onChange={(e) =>
+                                    handleAboutMeChange(e.target.value)
+                                }
+                                onKeyDown={handleKeyDown}
+                                placeholder="e.g., loves techno, prefers sober parties"
+                            />
+                        </div>
+
+                        {/* Container for the two side-by-side inputs */}
+                        <div className="two-column-inputs">
+                            {/* What are you looking for? Input Group */}
+                            <div className="input-group">
+                                <Label htmlFor="query-upload">
+                                    What are you looking for?
+                                </Label>
+                                <div className="query-input-wrapper">
+                                    <Input
+                                        id="query-upload"
+                                        ref={queryUploadInputRef}
+                                        value={query}
+                                        onChange={(e) =>
+                                            handleQueryChange(e.target.value)
+                                        }
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="e.g., sound camps near 8:00 & E"
+                                    />
+                                    {query && (
+                                        <button
+                                            type="button"
+                                            onClick={clearQuery}
+                                            className="clear-query-button"
+                                            aria-label="Clear query"
+                                        >
+                                            <X width={16} height={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* File Upload Input Group */}
+                            <div className="input-group">
+                                <Label htmlFor="file-upload">
+                                    Upload File (.csv, .xls, .xlsx)
+                                </Label>
+                                {!file ? (
+                                    <div
+                                        className="file-upload-area"
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
                                     >
-                                        <X width={16} height={16} />
-                                    </button>
+                                        <div className="file-upload-content">
+                                            <UploadIcon />
+                                            <p>
+                                                <span className="upload-link">
+                                                    Upload a file
+                                                </span>{" "}
+                                                or drag and drop
+                                            </p>
+                                            <p className="file-types">
+                                                CSV, XLS, XLSX up to 10MB
+                                            </p>
+                                        </div>
+                                        <input
+                                            id="file-upload"
+                                            ref={fileInputRef}
+                                            type="file"
+                                            className="sr-only"
+                                            accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                            onChange={handleFileChange}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="file-display-area">
+                                        <div className="file-info">
+                                            <FileText />
+                                            <span title={fileName || ""}>
+                                                {fileName}
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={clearFile}
+                                            className="clear-file-button"
+                                            aria-label="Remove file"
+                                        >
+                                            <X width={16} height={16} />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* Apply class name for Input Group */}
-                        <div className="input-group">
-                            <Label htmlFor="file-upload">
-                                {" "}
-                                {/* Changed from generic Label */}
-                                Upload File (.csv, .xls, .xlsx)
-                            </Label>
-                            {!file ? (
-                                // Apply class name for File Upload Area
-                                <div
-                                    className="file-upload-area"
-                                    onDrop={handleDrop}
-                                    onDragOver={handleDragOver}
-                                    onClick={() =>
-                                        fileInputRef.current?.click()
-                                    }
-                                >
-                                    {/* Apply class name for File Upload Content */}
-                                    <div className="file-upload-content">
-                                        <UploadIcon />
-                                        <p>
-                                            {/* Apply class name for Upload Link */}
-                                            <span className="upload-link">
-                                                Upload a file
-                                            </span>{" "}
-                                            or drag and drop
-                                        </p>
-                                        {/* Apply class name for File Types hint */}
-                                        <p className="file-types">
-                                            CSV, XLS, XLSX up to 10MB
-                                        </p>
-                                    </div>
-                                    <input
-                                        id="file-upload"
-                                        ref={fileInputRef}
-                                        type="file"
-                                        // Apply class name for screen reader only
-                                        className="sr-only"
-                                        accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                                        onChange={handleFileChange}
+                        {/* Submit Button Area */}
+                        <div className="submit-area">
+                            <Button
+                                onClick={onSubmit}
+                                disabled={isSubmitDisabled}
+                                className="submit-button"
+                            >
+                                {isLoading ? (
+                                    <Loader2
+                                        width={16}
+                                        height={16}
+                                        className="spinner"
                                     />
-                                </div>
-                            ) : (
-                                // Apply class name for File Display Area
-                                <div className="file-display-area">
-                                    {/* Apply class name for File Info */}
-                                    <div className="file-info">
-                                        <FileText />
-                                        <span title={fileName || ""}>
-                                            {fileName}
-                                        </span>
-                                    </div>
-                                    // Apply class name for Clear Button
-                                    <button
-                                        type="button"
-                                        onClick={clearFile} // Use clearFile callback
-                                        className="clear-file-button"
-                                        aria-label="Remove file"
-                                    >
-                                        <X width={16} height={16} />
-                                    </button>
-                                </div>
-                            )}
+                                ) : (
+                                    <Search width={16} height={16} />
+                                )}
+                                Go
+                            </Button>
                         </div>
-                    </div>
-                    {/* Apply class name for Submit Button container */}
-                    <div className="submit-button-container">
-                        <Button
-                            onClick={onSubmit}
-                            disabled={isSubmitDisabled}
-                            // Apply class name for Submit Button
-                            className="submit-button"
-                        >
-                            {isLoading ? (
-                                <Loader2
-                                    width={16}
-                                    height={16}
-                                    className="spinner"
-                                />
-                            ) : (
-                                <Search width={16} height={16} />
-                            )}
-                            Go
-                            {/* Tooltip can be added via CSS if needed, removed span */}
-                        </Button>
                     </div>
                 </TabsContent>
             </Tabs>

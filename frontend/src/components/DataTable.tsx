@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -11,7 +11,7 @@ import "./DataTable.css";
 
 const DataTable: React.FC = () => {
     const { headers, filteredRows, loading } = useData();
-    const tableContainerRef = React.useRef<HTMLDivElement>(null);
+    const tableContainerRef = useRef<HTMLDivElement>(null);
 
     const columns = useMemo<ColumnDef<string[]>[]>(() => {
         return headers.map((header, index) => ({
@@ -34,6 +34,7 @@ const DataTable: React.FC = () => {
         count: rows.length,
         estimateSize: () => 40,
         getScrollElement: () => tableContainerRef.current,
+        measureElement: (element) => element.getBoundingClientRect().height,
         overscan: 5,
     });
 
@@ -91,14 +92,16 @@ const DataTable: React.FC = () => {
                 >
                     {virtualRows.map((virtualRow) => {
                         const row = rows[virtualRow.index];
+                        const rowRef = rowVirtualizer.measureElement;
                         return (
                             <tr
                                 key={row.id}
+                                data-index={virtualRow.index}
+                                ref={rowRef}
                                 className={`table-row ${
                                     virtualRow.index % 2 ? "odd" : "even"
                                 }`}
                                 style={{
-                                    height: `${virtualRow.size}px`,
                                     transform: `translateY(${virtualRow.start}px)`,
                                 }}
                             >

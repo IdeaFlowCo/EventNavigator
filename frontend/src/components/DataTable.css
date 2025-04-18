@@ -10,7 +10,7 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* Important for virtualized column widths */
+    table-layout: fixed; /* Restore fixed layout for virtualization */
 }
 
 .table-header {
@@ -29,6 +29,11 @@
     font-weight: 600; /* Slightly bolder header */
     color: #495057;
     border-right: 1px solid #dee2e6;
+    /* overflow: hidden; */ /* Removed */
+    /* text-overflow: ellipsis; */ /* Removed */
+    white-space: normal; /* Allow wrapping */
+    vertical-align: top; /* Align wrapped header text nicely */
+    word-break: break-word; /* Break long words in header too */
 }
 
 .table-header-cell:last-child {
@@ -45,7 +50,7 @@
     left: 0;
     width: 100%;
     /* height and transform are set inline */
-    display: flex; /* Use flex for row cells */
+    /* display: flex; */ /* Removed flex from row */
 }
 
 .table-row.even {
@@ -60,9 +65,15 @@
     /* width is set inline */
     padding: 9px 12px; /* Adjusted padding */
     border-right: 1px solid #e9ecef; /* Lighter cell border */
-    display: flex; /* Align content vertically if needed */
-    align-items: center;
     font-size: 0.9rem; /* Slightly smaller cell font */
+    /* overflow: hidden; */ /* Removed */
+    /* text-overflow: ellipsis; */ /* Removed */
+    white-space: normal; /* Allow wrapping */
+    /* Remove flex properties that interfere with wrapping */
+    /* display: flex; */
+    /* align-items: center; */ /* Removed */
+    vertical-align: top; /* Align wrapped text nicely */
+    word-break: break-word; /* Break long words */
 }
 
 .table-cell:last-child {

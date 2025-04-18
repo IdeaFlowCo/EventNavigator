@@ -168,18 +168,19 @@ function AppLayout() {
         setIsLoadingSpreadsheet(false);
 
         if (parsedResult) {
-            console.log("Spreadsheet loaded successfully. Setting data.");
             setData(parsedResult.headers, parsedResult.rows);
 
             if (finalQuery.trim()) {
-                console.log("Query detected. Running search:", finalQuery);
-                await runSearchQuery(finalQuery);
-                console.log("Search finished.");
+                try {
+                    await runSearchQuery(finalQuery); // This now handles its own loading state
+                } catch (searchError) {
+                    console.error("Search operation failed:", searchError);
+                    alert("An error occurred during the search."); // Inform the user
+                }
             } else {
-                console.log("No query provided. Displaying full spreadsheet.");
+                // No need to call runSearchQuery if there's no query
             }
         } else {
-            console.log("Failed to load or parse spreadsheet.");
             setData([], []);
         }
     };

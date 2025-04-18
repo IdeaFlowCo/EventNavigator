@@ -27,12 +27,6 @@ Output: your output should be a JSON array of row indices, 1-indexed, relative t
         offset + 2
     }, ...] Only return indices that match the query. You could measure this by any results with a relevance score of 0.7 or greater. Respond ONLY with the JSON array.`;
 
-    console.log(
-        `Processing chunk starting at original index ${
-            offset + 1
-        }. Sending prompt to LLM...`
-    );
-
     try {
         const resp = await openai.chat.completions.create({
             model: "gpt-4.1-mini-2025-04-14",
@@ -40,10 +34,6 @@ Output: your output should be a JSON array of row indices, 1-indexed, relative t
         });
 
         const content = resp.choices?.[0]?.message?.content?.trim() || "";
-        console.log(
-            `LLM response for chunk starting at ${offset + 1}:`,
-            content
-        );
 
         if (!content) {
             console.error(
@@ -80,10 +70,6 @@ Output: your output should be a JSON array of row indices, 1-indexed, relative t
             return [];
         }
 
-        console.log(
-            `Parsed original indices for chunk starting at ${offset + 1}:`,
-            indices
-        );
         return indices; // Return original 1-based indices
     } catch (error) {
         console.error(
@@ -100,11 +86,9 @@ export const runSearch = async (
     rows: string[][]
 ): Promise<string[][]> => {
     if (!query) {
-        console.log("Empty query, returning all rows.");
         return rows;
     }
     if (!rows || rows.length === 0) {
-        console.log("No rows to search.");
         return [];
     }
 
@@ -116,10 +100,6 @@ export const runSearch = async (
         });
     }
 
-    console.log(
-        `Split data into ${chunks.length} chunks of size up to ${CHUNK_SIZE}.`
-    );
-
     try {
         const chunkPromises = chunks.map(({ chunk, offset }) =>
             processChunk(query, headers, chunk, offset)
@@ -129,18 +109,15 @@ export const runSearch = async (
 
         // Aggregate all indices from different chunks
         const allIndices = results.flat();
-        console.log("Aggregated 1-based indices from all chunks:", allIndices);
 
         // Ensure uniqueness and sort
         const uniqueIndices = [...new Set(allIndices)].sort((a, b) => a - b);
-        console.log("Unique 1-based indices:", uniqueIndices);
 
         // Filter rows based on the unique 1-based indices from the LLM
         const filteredRows = uniqueIndices
             .map((index) => rows[index - 1]) // Convert 1-based index to 0-based
             .filter((row): row is string[] => row !== undefined); // Type guard for filtering
 
-        console.log("Final filtered rows count:", filteredRows.length);
         return filteredRows;
     } catch (error) {
         console.error("Error during parallel chunk processing:", error);

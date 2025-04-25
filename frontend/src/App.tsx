@@ -1,6 +1,6 @@
 // import logoSrc from '/src/assets/logo.png'; // Remove unused import
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Import useEffect
 import Papa, { ParseResult } from "papaparse";
 import * as XLSX from "xlsx";
 import { DataProvider, useData } from "@/context/DataContext";
@@ -35,6 +35,97 @@ function AppLayout() {
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
         useState<boolean>(false); // State for modal visibility
 
+    // --- Helper function to fetch and parse data ---
+    const parseData = (
+        dataToParse: string[][] | string
+    ): { headers: string[]; rows: string[][] } | null => {
+        try {
+            let parsedData: string[][] | null = null;
+            if (typeof dataToParse === "string") {
+                const results: ParseResult<string[]> = Papa.parse<string[]>(
+                    dataToParse,
+                    { skipEmptyLines: true }
+                );
+                parsedData = results.data;
+            } else {
+                parsedData = dataToParse;
+            }
+
+            if (!parsedData || parsedData.length < 1) {
+                console.warn("Sheet appears to be empty or inaccessible."); // Use console.warn instead of alert for background fetch
+                return null;
+            }
+            const headers = parsedData[0];
+            const rows = parsedData.slice(1);
+            return { headers, rows };
+        } catch (error) {
+            console.error("Error parsing data:", error);
+            alert(
+                // Keep alert for user-facing errors
+                `Failed to parse data. Error: ${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
+            return null;
+        }
+    };
+
+    // --- Function to fetch data from URL ---
+    const fetchAndSetDataFromUrl = async (url: string, isPrecache = false) => {
+        if (
+            !url ||
+            !url.startsWith("https://docs.google.com/spreadsheets/d/")
+        ) {
+            if (!isPrecache) {
+                // Only alert on explicit user action
+                alert("Please enter a valid Google Sheets URL.");
+            } else {
+                console.warn(
+                    "Invalid default Google Sheet URL provided for precache."
+                );
+            }
+            return null; // Indicate failure
+        }
+        setIsLoadingSpreadsheet(true);
+        const csvUrl = url.replace(/\/edit.*$/, "/export?format=csv");
+        let parsedResult: { headers: string[]; rows: string[][] } | null = null;
+        try {
+            const res = await fetch(csvUrl);
+            if (!res.ok)
+                throw new Error(`Failed to fetch sheet: ${res.statusText}`);
+            const text = await res.text();
+            parsedResult = parseData(text);
+            if (parsedResult) {
+                setData(parsedResult.headers, parsedResult.rows);
+            } else {
+                setData([], []); // Clear data if parsing failed
+            }
+        } catch (error) {
+            console.error("Error fetching or parsing URL:", error);
+            if (!isPrecache) {
+                // Only alert on explicit user action
+                alert(
+                    `Failed to load data from URL. Check permissions or URL. Error: ${
+                        error instanceof Error ? error.message : String(error)
+                    }`
+                );
+            }
+            setData([], []); // Clear data on fetch error
+            parsedResult = null; // Ensure null is returned on error
+        } finally {
+            setIsLoadingSpreadsheet(false);
+        }
+        return parsedResult; // Return the result (or null if failed)
+    };
+
+    // --- Effect Hook for Pre-caching ---
+    useEffect(() => {
+        // Fetch data from the default URL when the component mounts
+        console.log("Attempting to precache default sheet:", sheetUrl);
+        fetchAndSetDataFromUrl(sheetUrl, true); // Pass true for isPrecache
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty dependency array ensures this runs only once on mount
+
     const handleTabChange = (value: "url" | "upload") => {
         setActiveTab(value);
     };
@@ -57,39 +148,6 @@ function AppLayout() {
         setFileName(newFile ? newFile.name : null);
     };
 
-    const parseData = (
-        dataToParse: string[][] | string
-    ): { headers: string[]; rows: string[][] } | null => {
-        try {
-            let parsedData: string[][] | null = null;
-            if (typeof dataToParse === "string") {
-                const results: ParseResult<string[]> = Papa.parse<string[]>(
-                    dataToParse,
-                    { skipEmptyLines: true }
-                );
-                parsedData = results.data;
-            } else {
-                parsedData = dataToParse;
-            }
-
-            if (!parsedData || parsedData.length < 1) {
-                alert("Sheet appears to be empty or inaccessible.");
-                return null;
-            }
-            const headers = parsedData[0];
-            const rows = parsedData.slice(1);
-            return { headers, rows };
-        } catch (error) {
-            console.error("Error parsing data:", error);
-            alert(
-                `Failed to parse data. Error: ${
-                    error instanceof Error ? error.message : String(error)
-                }`
-            );
-            return null;
-        }
-    };
-
     // Function to open the modal
     const openHowItWorksModal = () => {
         setIsHowItWorksModalOpen(true);
@@ -101,7 +159,7 @@ function AppLayout() {
     };
 
     const handleSubmit = async () => {
-        setIsLoadingSpreadsheet(true);
+        // Clear previous results only when initiating a new search/load
         setData([], []);
         let parsedResult: { headers: string[]; rows: string[][] } | null = null;
 
@@ -111,30 +169,11 @@ function AppLayout() {
             : query;
 
         if (activeTab === "url") {
-            if (
-                !sheetUrl ||
-                !sheetUrl.startsWith("https://docs.google.com/spreadsheets/d/")
-            ) {
-                alert("Please enter a valid Google Sheets URL.");
-                setIsLoadingSpreadsheet(false);
-                return;
-            }
-            const csvUrl = sheetUrl.replace(/\/edit.*$/, "/export?format=csv");
-            try {
-                const res = await fetch(csvUrl);
-                if (!res.ok)
-                    throw new Error(`Failed to fetch sheet: ${res.statusText}`);
-                const text = await res.text();
-                parsedResult = parseData(text);
-            } catch (error) {
-                console.error("Error fetching or parsing URL:", error);
-                alert(
-                    `Failed to load data from URL. Check permissions. Error: ${
-                        error instanceof Error ? error.message : String(error)
-                    }`
-                );
-            }
+            // Use the extracted function
+            parsedResult = await fetchAndSetDataFromUrl(sheetUrl);
+            // No need to set loading state here, fetchAndSetDataFromUrl handles it
         } else if (activeTab === "upload" && file) {
+            setIsLoadingSpreadsheet(true); // Set loading for file processing
             const ext = file.name.split(".").pop()?.toLowerCase();
             try {
                 if (ext === "csv") {
@@ -163,13 +202,12 @@ function AppLayout() {
                     }`
                 );
             }
+            setIsLoadingSpreadsheet(false); // Unset loading after file processing
         }
 
-        setIsLoadingSpreadsheet(false);
-
+        // Run search query only if data was successfully loaded/parsed
         if (parsedResult) {
-            setData(parsedResult.headers, parsedResult.rows);
-
+            // setData is now called within fetchAndSetDataFromUrl or after file parsing
             if (finalQuery.trim()) {
                 try {
                     // Pass the freshly parsed data directly to the updated function
@@ -181,9 +219,8 @@ function AppLayout() {
             } else {
                 // No need to call runSearchQuery if there's no query
             }
-        } else {
-            setData([], []);
         }
+        // No else needed, setData handled within fetch/parse logic
     };
 
     return (
@@ -282,9 +319,9 @@ function AppLayout() {
                 {/* Conditional Results Header */}
                 {headers.length > 0 && (
                     <div className="results-header">
-                        <h2>
+                        <h2 className="text-lg font-semibold mb-2">
                             {isDisplayingFullData
-                                ? "Full Spreadsheet Data"
+                                ? "All Events"
                                 : "Search Results"}
                         </h2>
                     </div>

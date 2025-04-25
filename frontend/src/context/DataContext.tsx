@@ -8,7 +8,11 @@ interface DataContextType {
     loading: boolean;
     isDisplayingFullData: boolean;
     setData: (headers: string[], rows: string[][]) => void;
-    runSearchQuery: (query: string) => Promise<void>;
+    // Update signature to accept optional data
+    runSearchQuery: (
+        query: string,
+        data?: { headers: string[]; rows: string[][] }
+    ) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -33,14 +37,24 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setFilteredRows(newRows);
     };
 
-    const runSearchQuery = async (query: string) => {
+    // Update function to accept optional data argument
+    const runSearchQuery = async (
+        query: string,
+        data?: { headers: string[]; rows: string[][] }
+    ) => {
         setLoading(true);
+        // Determine which data source to use
+        const searchHeaders = data ? data.headers : headers;
+        const searchRows = data ? data.rows : rows;
+
         try {
             if (!query.trim()) {
+                // If query is empty, show all rows from the *current* context state
                 setFilteredRows(rows);
                 return;
             }
-            const results = await runSearch(query, headers, rows);
+            // Perform search using the determined headers and rows
+            const results = await runSearch(query, searchHeaders, searchRows);
             setFilteredRows(results);
         } catch (error) {
             console.error("Error during search:", error);

@@ -172,7 +172,8 @@ function AppLayout() {
 
             if (finalQuery.trim()) {
                 try {
-                    await runSearchQuery(finalQuery); // This now handles its own loading state
+                    // Pass the freshly parsed data directly to the updated function
+                    await runSearchQuery(finalQuery, parsedResult);
                 } catch (searchError) {
                     console.error("Search operation failed:", searchError);
                     alert("An error occurred during the search."); // Inform the user

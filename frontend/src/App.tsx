@@ -1,4 +1,5 @@
 // import logoSrc from '/src/assets/logo.png'; // Remove unused import
+// import logoSrc from '/src/assets/logo.png'; // Remove unused import
 import "./App.css";
 import { useState, useEffect } from "react"; // Import useEffect
 import Papa, { ParseResult } from "papaparse";
@@ -8,16 +9,16 @@ import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
 import ResourcesSection from "@/components/ResourcesSection"; // Import the new component
-import { HelpCircle } from "lucide-react"; // Import the HelpCircle icon
-// Placeholder icons - consider using an icon library like react-icons
-// const GithubIcon = () => <svg>...</svg>; // Commented out for now
-// const InfoIcon = () => <svg>...</svg>; // Commented out for now
+import { HelpCircle, Heart } from "lucide-react"; // Import the HelpCircle & Heart icons
 
 // Define the main layout and logic component
 function AppLayout() {
     const {
         headers,
-        isDisplayingFullData,
+        // isDisplayingFullData, // Removed
+        viewMode, // Added
+        lastNonFavoriteViewMode, // Added
+        setViewMode, // Added
         setData,
         runSearchQuery,
         loading: isSearching,
@@ -316,18 +317,54 @@ function AppLayout() {
                     onSubmit={handleSubmit}
                 />
 
-                {/* Conditional Results Header */}
+                {/* Conditional Rendering for Table Area with Button Repositioned */}
                 {headers.length > 0 && (
-                    <div className="results-header">
+                    <div
+                        className="table-area-wrapper"
+                        style={{ position: "relative" }}
+                    >
+                        {" "}
+                        {/* New wrapper */}
+                        {/* Heading */}
                         <h2 className="text-lg font-semibold mb-2">
-                            {isDisplayingFullData
-                                ? "All Events"
-                                : "Search Results"}
+                            {" "}
+                            {/* Moved h2 inside, kept margin */}
+                            {viewMode === "favorites"
+                                ? "My Favorites"
+                                : viewMode === "search"
+                                ? "Search Results"
+                                : "All Events"}
                         </h2>
+                        {/* DataTable */}
+                        <DataTable /> {/* Moved DataTable inside */}
+                        {/* Favorites Button (Standard HTML with custom CSS class) */}
+                        <button
+                            type="button"
+                            className="favorites-toggle-button" // New custom class
+                            onClick={() => {
+                                const nextView =
+                                    viewMode === "favorites"
+                                        ? lastNonFavoriteViewMode
+                                        : "favorites";
+                                setViewMode(nextView);
+                            }}
+                            data-favorited={viewMode === "favorites"} // Data attribute for CSS styling
+                            // style prop removed - positioning handled in App.css
+                        >
+                            <Heart
+                            // className removed - styling handled in App.css
+                            // Size controlled via CSS potentially
+                            />
+                            <span>
+                                {" "}
+                                {/* Wrap text in span for potential styling */}
+                                {viewMode === "favorites"
+                                    ? "Show All"
+                                    : "My Favorites"}
+                            </span>
+                        </button>
                     </div>
                 )}
-
-                <DataTable />
 
                 <ResourcesSection />
             </main>

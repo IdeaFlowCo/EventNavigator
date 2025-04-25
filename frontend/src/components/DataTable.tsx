@@ -7,14 +7,30 @@ import {
     ColumnDef,
     SortingState,
     ColumnSizingState,
+    CellContext, // Import CellContext
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowUp, ArrowDown, ChevronsUpDown, GripVertical } from "lucide-react";
+import {
+    ArrowUp,
+    ArrowDown,
+    ChevronsUpDown,
+    GripVertical,
+    Heart, // Import Heart icon
+} from "lucide-react";
 import { useData } from "../context/DataContext";
 import "./DataTable.css";
+// import { Button } from "./ui/button"; // Remove Button import
 
 const DataTable: React.FC = () => {
-    const { headers, filteredRows, loading } = useData();
+    const {
+        headers,
+        filteredRows,
+        loading,
+        favoriteIds, // Get favorites state
+        addFavorite, // Get favorite actions
+        removeFavorite,
+        uidColumnIndex, // Get UID column index
+    } = useData();
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
@@ -41,21 +57,95 @@ const DataTable: React.FC = () => {
         return Math.min(500, calculatedSize);
     };
 
-    const columns = useMemo<ColumnDef<string[]>[]>(() => {
+    // Define the Actions column separately
+    const actionsColumn: ColumnDef<string[]> = useMemo(
+        () => ({
+            id: "actions",
+            header: () => <Heart size={24} />, // Increased header icon size
+            size: 60, // Keep column size for now, might need adjustment
+            minSize: 60,
+            maxSize: 60,
+            enableResizing: false,
+            cell: ({ row }: CellContext<string[], unknown>) => {
+                // Ensure uidColumnIndex is valid before proceeding
+                if (
+                    uidColumnIndex < 0 ||
+                    uidColumnIndex >= row.original.length
+                ) {
+                    console.error("Invalid UID column index:", uidColumnIndex);
+                    return null; // Or render an error indicator
+                }
+                const uid = row.original[uidColumnIndex];
+                const isFavorited = favoriteIds.has(uid);
+
+                // Correct event type for div onClick
+                const handleFavoriteClick = (
+                    e:
+                        | React.MouseEvent<HTMLDivElement>
+                        | React.KeyboardEvent<HTMLDivElement>
+                ) => {
+                    e.stopPropagation(); // Prevent row click events if any
+                    if (isFavorited) {
+                        removeFavorite(uid);
+                    } else {
+                        addFavorite(uid);
+                    }
+                };
+
+                // Use a div wrapper instead of Button for custom styling
+                return (
+                    <div
+                        onClick={handleFavoriteClick}
+                        className={`favorite-icon-wrapper ${
+                            isFavorited ? "favorited" : ""
+                        }`}
+                        role="button" // Add role for accessibility
+                        aria-pressed={isFavorited} // Indicate state
+                        aria-label={
+                            isFavorited ? "Remove favorite" : "Add favorite"
+                        }
+                        tabIndex={0} // Make it focusable
+                        // Correct event type for div onKeyDown
+                        onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+                            // Allow activation with Enter/Space
+                            if (e.key === "Enter" || e.key === " ") {
+                                handleFavoriteClick(e); // No cast needed now
+                            }
+                        }}
+                    >
+                        <Heart size={24} className="favorite-icon" />
+                        {/* Increased icon size */}
+                    </div>
+                );
+            },
+        }),
+        [favoriteIds, addFavorite, removeFavorite, uidColumnIndex]
+    );
+
+    const dataColumns = useMemo<ColumnDef<string[]>[]>(() => {
         return headers.map((header, index) => ({
-            id: String(index),
+            id: String(index), // Keep original index as ID for data columns
             header: header,
-            accessorFn: (row) => row[index],
-            size: calculateInitialSize(header), // Calculate initial size dynamically (includes Description logic)
-            minSize: 50, // Minimum size
-            maxSize: 500, // Maximum size (Description will be capped at this)
+            accessorFn: (row) => row[index], // Accessor remains the same
+            size: calculateInitialSize(header),
+            minSize: 50,
+            maxSize: 500,
+            // enableResizing: true // Default is true, no need to explicitly set unless overriding
         }));
-    }, [headers]);
+        // Filter out the UID column if it exists and we don't want to display it
+        // .filter((_, index) => index !== uidColumnIndex); // Optional: Hide UID column
+    }, [headers, uidColumnIndex]); // Add uidColumnIndex dependency
+
+    // Combine actions column and data columns
+    const columns = useMemo<ColumnDef<string[]>[]>(
+        () => [actionsColumn, ...dataColumns],
+        [actionsColumn, dataColumns]
+    );
 
     const table = useReactTable({
         data: filteredRows,
         columns,
-        columnResizeMode: "onChange", // Enable resizing
+        columnResizeMode: "onChange",
         state: {
             sorting,
             columnSizing,
@@ -118,12 +208,25 @@ const DataTable: React.FC = () => {
                                 <th
                                     key={header.id}
                                     style={{ width: header.getSize() }}
-                                    className="table-header-cell"
+                                    // Add sticky class for the actions column header
+                                    className={`table-header-cell ${
+                                        header.id === "actions"
+                                            ? "sticky-col"
+                                            : ""
+                                    }`}
                                     colSpan={header.colSpan}
                                 >
                                     <div
-                                        className="header-content"
-                                        onClick={header.column.getToggleSortingHandler()}
+                                        className={`header-content ${
+                                            header.column.getCanSort()
+                                                ? "cursor-pointer select-none"
+                                                : ""
+                                        }`} // Add cursor only if sortable
+                                        onClick={
+                                            header.column.getCanSort()
+                                                ? header.column.getToggleSortingHandler()
+                                                : undefined
+                                        } // Only add onClick if sortable
                                     >
                                         {flexRender(
                                             header.column.columnDef.header,
@@ -151,7 +254,10 @@ const DataTable: React.FC = () => {
                                                 : ""
                                         }`}
                                     >
-                                        <GripVertical size={18} />
+                                        {/* Only show resizer if resizing is enabled */}
+                                        {header.column.getCanResize() && (
+                                            <GripVertical size={18} />
+                                        )}
                                     </div>
                                 </th>
                             ))}
@@ -181,7 +287,12 @@ const DataTable: React.FC = () => {
                                     <td
                                         key={cell.id}
                                         style={{ width: cell.column.getSize() }}
-                                        className="table-cell"
+                                        // Add sticky class for the actions column cell
+                                        className={`table-cell ${
+                                            cell.column.id === "actions"
+                                                ? "sticky-col"
+                                                : ""
+                                        }`}
                                     >
                                         {flexRender(
                                             cell.column.columnDef.cell,

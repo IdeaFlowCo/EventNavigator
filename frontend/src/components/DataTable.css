@@ -201,3 +201,109 @@
 .table-header-cell:last-child .resizer {
     display: none;
 }
+
+/* Styles for the sticky Actions column */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 2; /* Ensure it's above non-sticky cells (z-index 1 is header) */
+}
+
+/* Ensure sticky header cell has correct background and uses text/vertical align */
+.table-header .sticky-col {
+    background-color: #f8f9fa; /* Match header background */
+    z-index: 3; /* Above other header cells and sticky body cells */
+    /* display: flex; */ /* REMOVED */
+    /* align-items: center; */ /* REMOVED */
+    /* justify-content: center; */ /* REMOVED */
+    text-align: center; /* Use text-align */
+    vertical-align: middle; /* Use vertical-align */
+    padding: 10px 12px; /* Restore padding */
+}
+
+/* Re-apply specific centering for the inner header content div */
+.table-header .sticky-col .header-content {
+    justify-content: center; /* Center icon horizontally */
+    align-items: center; /* Center icon vertically */
+    flex-grow: 0; /* Prevent growing */
+    padding: 0; /* Remove padding */
+    height: auto; /* Adjust height */
+    display: inline-flex; /* Use inline-flex to respect parent text-align */
+}
+
+/* Ensure sticky body cells have correct background (respecting alternating rows) */
+.table-row.odd .sticky-col {
+    background-color: #f8f9fa; /* Match odd row background */
+}
+
+.table-row.even .sticky-col {
+    background-color: #ffffff; /* Match even row background */
+}
+
+/* Add a border to the right of the sticky column to separate it visually */
+/* Center content within the sticky TD using text/vertical align */
+td.sticky-col {
+    border-right: 1px solid #dee2e6; /* Match header border */
+    /* display: flex; */ /* REMOVED */
+    /* align-items: center; */ /* REMOVED */
+    /* justify-content: center; */ /* REMOVED */
+    text-align: center; /* Use text-align */
+    vertical-align: middle; /* Use vertical-align */
+    padding: 10px 12px; /* Ensure padding is consistent */
+}
+
+/* Favorite Icon Styling */
+.favorite-icon-wrapper {
+    /* display: inline-block; */ /* Use inline-block instead of flex */
+    display: inline-flex; /* Use inline-flex */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    /* vertical-align: middle; */ /* Removed, handled by flex */
+    padding: 6px; /* Slightly larger padding for bigger icon */
+    /* border-radius: 50%; */ /* REMOVED circular background */
+    cursor: pointer;
+    /* transition: background-color 0.2s ease-in-out; */ /* REMOVED background transition */
+    /* transition: transform 0.15s ease-in-out; */ /* REMOVED scale transition */
+    outline: none;
+    /* width: auto; */ /* Let size be determined by content */
+    /* height: auto; */ /* Let size be determined by content */
+    /* box-sizing: border-box; */ /* REMOVED box-sizing */
+}
+
+.favorite-icon {
+    stroke: #adb5bd; /* Dim/light gray stroke (default) */
+    fill: none; /* No fill by default */
+    stroke-width: 2;
+    transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
+}
+
+/* Hover effect: Just change icon color */
+.favorite-icon-wrapper:hover .favorite-icon {
+    stroke: #6c757d; /* Slightly darker gray stroke on hover */
+}
+
+/* Remove specific hover transform */
+/* .favorite-icon-wrapper:hover { */
+/* transform: scale(1.15); */
+/* } */
+
+/* Focus style for accessibility */
+.favorite-icon-wrapper:focus-visible {
+    /* box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5); */ /* REMOVED default ring */
+    /* Add custom focus style if needed, e.g., subtle outline on the icon */
+    outline: 2px solid rgba(0, 123, 255, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px; /* Add radius to focus outline */
+}
+
+/* Favorited state ("BOOM") - Use Orange */
+.favorite-icon-wrapper.favorited .favorite-icon {
+    fill: #cc5500; /* Orange fill (Theme color) */
+    stroke: #cc5500; /* Orange stroke */
+}
+
+/* Optional: Slightly different hover when already favorited - Use Darker Orange */
+.favorite-icon-wrapper.favorited:hover .favorite-icon {
+    fill: #b34700; /* Darker orange on hover */
+    stroke: #b34700;
+}

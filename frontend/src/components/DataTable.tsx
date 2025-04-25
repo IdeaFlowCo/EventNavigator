@@ -1,17 +1,21 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
     useReactTable,
     getCoreRowModel,
+    getSortedRowModel,
     flexRender,
     ColumnDef,
+    SortingState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import "./DataTable.css";
 
 const DataTable: React.FC = () => {
     const { headers, filteredRows, loading } = useData();
     const tableContainerRef = useRef<HTMLDivElement>(null);
+    const [sorting, setSorting] = useState<SortingState>([]);
 
     const columns = useMemo<ColumnDef<string[]>[]>(() => {
         return headers.map((header, index) => ({
@@ -25,10 +29,15 @@ const DataTable: React.FC = () => {
     const table = useReactTable({
         data: filteredRows,
         columns,
+        state: {
+            sorting,
+        },
+        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
     });
 
-    const { rows } = table.getRowModel();
+    const { rows } = table.getRowModel(); // Use getRowModel() which respects sorting
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -76,11 +85,23 @@ const DataTable: React.FC = () => {
                                     key={header.id}
                                     style={{ width: header.getSize() }}
                                     className="table-header-cell"
+                                    onClick={header.column.getToggleSortingHandler()}
                                 >
                                     {flexRender(
                                         header.column.columnDef.header,
                                         header.getContext()
                                     )}
+                                    <span className="sort-icon">
+                                        {{
+                                            asc: <ArrowUp size={16} />,
+                                            desc: <ArrowDown size={16} />,
+                                        }[
+                                            header.column.getIsSorted() as string
+                                        ] ??
+                                            (header.column.getCanSort() ? (
+                                                <ChevronsUpDown size={16} />
+                                            ) : null)}
+                                    </span>
                                 </th>
                             ))}
                         </tr>

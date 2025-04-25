@@ -34,6 +34,8 @@
     white-space: normal; /* Allow wrapping */
     vertical-align: top; /* Align wrapped header text nicely */
     word-break: break-word; /* Break long words in header too */
+    cursor: pointer; /* Indicate clickable header */
+    position: relative; /* For positioning the sort icon */
 }
 
 .table-header-cell:last-child {
@@ -113,4 +115,31 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Sort Icon Styles */
+.sort-icon {
+    display: inline-block; /* Keep icon on the same line */
+    margin-left: 6px; /* Space between header text and icon */
+    opacity: 0; /* Hide by default */
+    transition: opacity 0.2s ease-in-out; /* Smooth transition */
+    vertical-align: middle; /* Align icon with text */
+    color: #6c757d; /* Muted color for default icon */
+}
+
+/* Show default sort icon on hover if the column is sortable */
+.table-header-cell:hover .sort-icon {
+    opacity: 0.5; /* Show slightly faded */
+}
+
+/* Keep active sort icon (asc/desc) always visible and fully opaque */
+.table-header-cell[aria-sort] .sort-icon {
+    opacity: 1;
+    color: #495057; /* Darker color for active sort */
+}
+
+/* Hide the default ChevronsUpDown icon when an active sort is applied */
+.table-header-cell[aria-sort] .sort-icon svg:not([stroke="currentColor"]) {
+    /* This targets the default icon specifically if needed, but opacity logic handles it */
+    /* display: none; */ /* Alternative: hide default icon completely when sorted */
 }

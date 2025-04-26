@@ -24,7 +24,7 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                 <div className="modal-header">
                     <div className="modal-title-section">
                         <Info size={24} className="modal-title-icon" />
-                        <h2>How BRC Navigator Works</h2>
+                        <h2>How Event Navigator Works</h2>
                     </div>
                     <button
                         onClick={onClose}
@@ -104,29 +104,7 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                         <li>
                             You can drag and drop files directly onto the page
                         </li>
-                        <li>BRC Navigator works with data in any language</li>
-                    </ul>
-                </div>
-
-                {/* Data Privacy Section */}
-                <div className="data-privacy-section">
-                    <h3>Data Privacy</h3>
-                    <ul className="list-disc list-inside text-gray-600 space-y-1">
-                        <li>
-                            Your sheet data is processed directly in your
-                            browser when possible.
-                        </li>
-                        <li>
-                            For complex queries or very large sheets, data may
-                            be processed securely on our servers and is not
-                            stored after processing.
-                        </li>
-                        <li>BRC Navigator works with data in any language</li>
-                        <li>We never store your Google Sheets credentials.</li>
-                        <li>
-                            Uploaded files are deleted immediately after
-                            processing.
-                        </li>
+                        <li>Event Navigator works with data in any language</li>
                     </ul>
                 </div>
 

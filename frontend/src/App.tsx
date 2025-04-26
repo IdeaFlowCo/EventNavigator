@@ -8,8 +8,8 @@ import { DataProvider, useData } from "@/context/DataContext";
 import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
-import ResourcesSection from "@/components/ResourcesSection"; // Import the new component
-import { HelpCircle, Heart } from "lucide-react"; // Import the HelpCircle & Heart icons
+// import ResourcesSection from "@/components/ResourcesSection"; // Remove unused import
+import { HelpCircle, Heart, MapPin } from "lucide-react"; // Import the HelpCircle, Heart & MapPin icons
 
 // Define the main layout and logic component
 function AppLayout() {
@@ -27,7 +27,7 @@ function AppLayout() {
     const [query, setQuery] = useState<string>("");
     const [aboutMe, setAboutMe] = useState<string>(""); // Add state for About Me
     const [sheetUrl, setSheetUrl] = useState<string>(
-        "https://docs.google.com/spreadsheets/d/1QQBVamDD0fi6DZiHLR1dDCkUq36KNM3k/edit?gid=894876008#gid=894876008"
+        "https://docs.google.com/spreadsheets/d/1gdocs-example-sheet-id/edit?usp=sharing" // Generic example URL
     );
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
@@ -100,6 +100,10 @@ function AppLayout() {
                 setData(parsedResult.headers, parsedResult.rows);
             } else {
                 setData([], []); // Clear data if parsing failed
+                if (!isPrecache) {
+                    // Only alert if not precaching and parsing failed
+                    alert("Failed to parse the data from the source.");
+                }
             }
         } catch (error) {
             console.error("Error fetching or parsing URL:", error);
@@ -210,6 +214,8 @@ function AppLayout() {
         if (parsedResult) {
             // setData is now called within fetchAndSetDataFromUrl or after file parsing
             if (finalQuery.trim()) {
+                // If there's a query, set view mode to search
+                setViewMode("search");
                 try {
                     // Pass the freshly parsed data directly to the updated function
                     await runSearchQuery(finalQuery, parsedResult);
@@ -218,8 +224,14 @@ function AppLayout() {
                     alert("An error occurred during the search."); // Inform the user
                 }
             } else {
+                // If no query, show all data after loading
+                setViewMode("all");
                 // No need to call runSearchQuery if there's no query
             }
+        } else {
+            // If loading failed, clear headers/rows and set view mode to all
+            setData([], []);
+            setViewMode("all");
         }
         // No else needed, setData handled within fetch/parse logic
     };
@@ -233,24 +245,8 @@ function AppLayout() {
                 <div className="header-content">
                     {/* Apply class name for Logo/Title */}
                     <div className="logo-title">
-                        <svg // Simple Burning Man stick figure
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            {/* Head */}
-                            <circle cx="12" cy="5" r="2" />
-                            {/* Body */}
-                            <line x1="12" y1="7" x2="12" y2="15" />
-                            {/* Arms */}
-                            <line x1="8" y1="9" x2="16" y2="9" />
-                            {/* Legs */}
-                            <line x1="12" y1="15" x2="9" y2="19" />
-                            <line x1="12" y1="15" x2="15" y2="19" />
-                        </svg>
-                        BRC Navigator
+                        <MapPin /> {/* Replace SVG with MapPin icon */}
+                        Event Navigator
                     </div>
                     {/* Apply class name for Nav */}
                     <nav className="app-nav">
@@ -270,7 +266,7 @@ function AppLayout() {
                         </button>
                         {/* Apply class name for Nav Link */}
                         <a
-                            href="https://github.com/IdeaFlowCo/BRCNavigator"
+                            href="https://github.com/IdeaFlowCo/EventNavigator"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="nav-link"
@@ -292,11 +288,11 @@ function AppLayout() {
             <main className="main-content">
                 {/* Apply class name for Intro Section */}
                 <div className="intro-section">
-                    <h1>Burning Man 2025: Tomorrow Today</h1>
+                    <h1>Find Your Next Event Experience</h1>
                     <p>
-                        Discover art installations, workshops, performances, and
-                        gatherings across the playa that match your interests
-                        and expand your consciousness.
+                        Discover workshops, performances, talks, and gatherings
+                        from any event schedule or spreadsheet. Find what
+                        matches your interests.
                     </p>
                 </div>
 
@@ -365,8 +361,6 @@ function AppLayout() {
                         </button>
                     </div>
                 )}
-
-                <ResourcesSection />
             </main>
 
             {/* Apply class name for Footer */}
@@ -374,7 +368,7 @@ function AppLayout() {
                 {/* Apply class name for Footer Content */}
                 <div className="footer-content">
                     <p>
-                        BRC Navigator is an open-source project.{" "}
+                        Event Navigator is an open-source project.{" "}
                         {/* Apply class name for Footer Link */}
                         <a
                             href="https://github.com/IdeaFlowCo/BRCNavigator"
@@ -393,8 +387,9 @@ function AppLayout() {
                         </a>
                     </p>
                     <p>
-                        Built with AI assistance • MIT License • No data is
-                        stored
+                        {/* Built with AI assistance • */}
+                        MIT License
+                        {/* • No data is stored */}
                     </p>
                 </div>
             </footer>

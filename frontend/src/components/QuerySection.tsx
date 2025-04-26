@@ -182,7 +182,7 @@ function QuerySection({
                         {/* About Me Input Group (Full Width) */}
                         <div className="input-group about-me-group">
                             <Label htmlFor="about-me">
-                                About me (optional)
+                                Describe yourself (optional)
                             </Label>
                             <Input
                                 id="about-me"
@@ -191,7 +191,7 @@ function QuerySection({
                                     handleAboutMeChange(e.target.value)
                                 }
                                 onKeyDown={handleKeyDown}
-                                placeholder="e.g., loves techno, prefers sober parties"
+                                placeholder="e.g., loves interactive art, interested in sustainability talks"
                             />
                         </div>
 
@@ -200,7 +200,7 @@ function QuerySection({
                             {/* What are you looking for? Input Group */}
                             <div className="input-group">
                                 <Label htmlFor="query">
-                                    What are you looking for?
+                                    Search for events/activities
                                 </Label>
                                 <div className="query-input-wrapper">
                                     <Input
@@ -211,7 +211,7 @@ function QuerySection({
                                             handleQueryChange(e.target.value)
                                         }
                                         onKeyDown={handleKeyDown}
-                                        placeholder="e.g., sound camps near 8:00 & E"
+                                        placeholder="e.g., workshops after 6 PM, family-friendly activities"
                                         autoFocus
                                     />
                                     {query && (
@@ -274,7 +274,7 @@ function QuerySection({
                         {/* About Me Input Group (Full Width) */}
                         <div className="input-group about-me-group">
                             <Label htmlFor="about-me-upload">
-                                About me (optional)
+                                Describe yourself (optional)
                             </Label>
                             <Input
                                 id="about-me-upload"
@@ -283,7 +283,7 @@ function QuerySection({
                                     handleAboutMeChange(e.target.value)
                                 }
                                 onKeyDown={handleKeyDown}
-                                placeholder="e.g., loves techno, prefers sober parties"
+                                placeholder="e.g., loves interactive art, interested in sustainability talks"
                             />
                         </div>
 
@@ -292,7 +292,7 @@ function QuerySection({
                             {/* What are you looking for? Input Group */}
                             <div className="input-group">
                                 <Label htmlFor="query-upload">
-                                    What are you looking for?
+                                    Search for events/activities
                                 </Label>
                                 <div className="query-input-wrapper">
                                     <Input
@@ -303,7 +303,7 @@ function QuerySection({
                                             handleQueryChange(e.target.value)
                                         }
                                         onKeyDown={handleKeyDown}
-                                        placeholder="e.g., sound camps near 8:00 & E"
+                                        placeholder="e.g., find talks about AI, locate specific vendor"
                                     />
                                     {query && (
                                         <button

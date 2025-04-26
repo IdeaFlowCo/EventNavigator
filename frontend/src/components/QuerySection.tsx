@@ -240,7 +240,7 @@ function QuerySection({
                                         handleUrlChange(e.target.value)
                                     }
                                     onKeyDown={handleKeyDown}
-                                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                                    placeholder="Enter Google Sheet URL..."
                                 />
                             </div>
                         </div>

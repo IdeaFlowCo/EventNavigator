@@ -27,7 +27,7 @@ function AppLayout() {
     const [query, setQuery] = useState<string>("");
     const [aboutMe, setAboutMe] = useState<string>(""); // Add state for About Me
     const [sheetUrl, setSheetUrl] = useState<string>(
-        "https://docs.google.com/spreadsheets/d/1gdocs-example-sheet-id/edit?usp=sharing" // Generic example URL
+        "" // Remove default URL but keep placeholder
     );
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);

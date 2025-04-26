@@ -1,6 +1,6 @@
-# BRC Navigator
+# Event Navigator
 
-Navigate Burning Man event listings using natural language. This tool lets you ask questions about event data (from Google Sheets, CSV, or Excel) in plain English and get instant results.
+Navigate event listings using natural language. This tool lets you ask questions about event data (from Google Sheets, CSV, or Excel) in plain English and get instant results.
 
 ## Features
 
@@ -22,8 +22,8 @@ Navigate Burning Man event listings using natural language. This tool lets you a
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/IdeaFlowCo/BRCNavigator.git
-    cd BRCNavigator
+    git clone https://github.com/IdeaFlowCo/EventNavigator.git
+    cd EventNavigator
     ```
 
 2.  **Set up Frontend:**

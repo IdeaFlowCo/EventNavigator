@@ -371,7 +371,7 @@ function AppLayout() {
                         Event Navigator is an open-source project.{" "}
                         {/* Apply class name for Footer Link */}
                         <a
-                            href="https://github.com/IdeaFlowCo/BRCNavigator"
+                            href="https://github.com/IdeaFlowCo/EventNavigator"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="footer-link"

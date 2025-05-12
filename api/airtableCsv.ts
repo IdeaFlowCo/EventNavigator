@@ -13,20 +13,23 @@ const AIRTABLE_CSV_RE =
 
 // Using 'any' for req/res to avoid needing @vercel/node types in the local dev env.
 export default async function handler(req: any, res: any) {
+    // The client URL parameter may be URL-encoded. Decode once here for validation/fetch.
     const { url } = req.query;
     if (!url || typeof url !== "string") {
         res.status(400).json({ error: 'Missing "url" query param' });
         return;
     }
 
+    const decodedUrl = decodeURIComponent(url);
+
     // Prevent open-proxy abuse – only allow Airtable CSV endpoints.
-    if (!AIRTABLE_CSV_RE.test(url)) {
+    if (!AIRTABLE_CSV_RE.test(decodedUrl)) {
         res.status(400).json({ error: "Invalid Airtable CSV URL" });
         return;
     }
 
     try {
-        const airtableRes = await fetch(url);
+        const airtableRes = await fetch(decodedUrl);
         if (!airtableRes.ok) {
             res.status(airtableRes.status).end();
             return;

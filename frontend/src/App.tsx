@@ -99,19 +99,14 @@ function AppLayout() {
             // Google Sheets export URL pattern
             csvUrl = url.replace(/\/edit.*$/, "/export?format=csv");
         } else if (isAirtableUrl) {
-            // Extract the appId (base identifier) and view/share identifier.
-            const appIdMatch = url.match(/\/app[A-Za-z0-9]+/);
+            // Extract view/share identifier.
             const viewIdMatch = url.match(/\/(viw|shr)[A-Za-z0-9]+/);
 
-            if (!appIdMatch || !viewIdMatch) {
-                console.error(
-                    "Failed to extract Airtable app or view ID from URL",
-                    {
-                        url,
-                        appIdMatch,
-                        viewIdMatch,
-                    }
-                );
+            if (!viewIdMatch) {
+                console.error("Failed to extract Airtable view ID from URL", {
+                    url,
+                    viewIdMatch,
+                });
                 if (!isPrecache)
                     alert(
                         "Could not read Airtable IDs from the link. Make sure you paste a shared VIEW link (it should contain both an app… and viw… segment)."
@@ -119,11 +114,10 @@ function AppLayout() {
                 return null;
             }
 
-            const appId = appIdMatch[0].replace("/", ""); // remove leading slash
             const viewId = viewIdMatch[0].replace("/", ""); // remove leading slash
 
-            // New (2024) CSV endpoint – requires app id + downloadCsv keyword.
-            csvUrl = `https://airtable.com/v0.3/view/${viewId}/downloadCsv?x-airtable-application-id=${appId}`;
+            // Public shared-view CSV endpoint (does not require auth)
+            csvUrl = `https://airtable.com/v0.3/view/${viewId}?exportCSV=true`;
         }
 
         // Defensive guard – should never be null here

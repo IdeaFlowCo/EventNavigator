@@ -7,9 +7,9 @@ import { promisify } from "util";
 
 const streamPipeline = promisify(pipeline);
 
-// Basic regex: https://airtable.com/v0.3/view/<id>?exportCSV=true(<optional params>)
+// Basic regex: https://airtable.com/v0.3/view/<id>?exportCSV=true
 const AIRTABLE_CSV_RE =
-    /^https:\/\/airtable\.com\/v0\.3\/view\/[A-Za-z0-9]+\/downloadCsv\?.*$/;
+    /^https:\/\/airtable\.com\/v0\.3\/view\/[A-Za-z0-9]+\?exportCSV=true(?:[&#].*)?$/;
 
 // Using 'any' for req/res to avoid needing @vercel/node types in the local dev env.
 export default async function handler(req: any, res: any) {
@@ -35,8 +35,11 @@ export default async function handler(req: any, res: any) {
             return;
         }
 
-        // Pass through headers
-        res.setHeader("Content-Type", "text/csv");
+        // Pass through upstream headers & CORS
+        res.setHeader(
+            "Content-Type",
+            airtableRes.headers.get("content-type") || "text/csv"
+        );
         res.setHeader("Access-Control-Allow-Origin", "*");
 
         // Stream body to client to avoid buffering large files.

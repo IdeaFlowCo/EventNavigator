@@ -73,54 +73,117 @@ function AppLayout() {
 
     // --- Function to fetch data from URL ---
     const fetchAndSetDataFromUrl = async (url: string, isPrecache = false) => {
-        if (
-            !url ||
-            !url.startsWith("https://docs.google.com/spreadsheets/d/")
-        ) {
+        // --- Identify URL type (Google Sheets vs Airtable) ---
+        const isGoogleSheetUrl = url.startsWith(
+            "https://docs.google.com/spreadsheets/"
+        );
+        const isAirtableUrl = url.startsWith("https://airtable.com/");
+
+        if (!url || (!isGoogleSheetUrl && !isAirtableUrl)) {
             if (!isPrecache) {
-                // Only alert on explicit user action
-                alert("Please enter a valid Google Sheets URL.");
+                alert(
+                    "Please enter a valid Google Sheets or Airtable shared view URL."
+                );
             } else {
                 console.warn(
-                    "Invalid default Google Sheet URL provided for precache."
+                    "Invalid default sheet URL provided for precache.",
+                    { url }
                 );
             }
-            return null; // Indicate failure
+            return null; // Indicate failure early
         }
+
+        // Map user-facing URL -> raw CSV download URL
+        let csvUrl: string | null = null;
+        if (isGoogleSheetUrl) {
+            // Google Sheets export URL pattern
+            csvUrl = url.replace(/\/edit.*$/, "/export?format=csv");
+        } else if (isAirtableUrl) {
+            // Extract the appId (base identifier) and view/share identifier.
+            const appIdMatch = url.match(/\/app[A-Za-z0-9]+/);
+            const viewIdMatch = url.match(/\/(viw|shr)[A-Za-z0-9]+/);
+
+            if (!appIdMatch || !viewIdMatch) {
+                console.error(
+                    "Failed to extract Airtable app or view ID from URL",
+                    {
+                        url,
+                        appIdMatch,
+                        viewIdMatch,
+                    }
+                );
+                if (!isPrecache)
+                    alert(
+                        "Could not read Airtable IDs from the link. Make sure you paste a shared VIEW link (it should contain both an app… and viw… segment)."
+                    );
+                return null;
+            }
+
+            const appId = appIdMatch[0].replace("/", ""); // remove leading slash
+            const viewId = viewIdMatch[0].replace("/", ""); // remove leading slash
+
+            // New (2024) CSV endpoint – requires app id + downloadCsv keyword.
+            csvUrl = `https://airtable.com/v0.3/view/${viewId}/downloadCsv?x-airtable-application-id=${appId}`;
+        }
+
+        // Defensive guard – should never be null here
+        if (!csvUrl) {
+            console.error("CSV URL generation failed", { url });
+            return null;
+        }
+
+        console.log("Fetching CSV from", csvUrl);
         setIsLoadingSpreadsheet(true);
-        const csvUrl = url.replace(/\/edit.*$/, "/export?format=csv");
         let parsedResult: { headers: string[]; rows: string[][] } | null = null;
         try {
-            const res = await fetch(csvUrl);
-            if (!res.ok)
-                throw new Error(`Failed to fetch sheet: ${res.statusText}`);
+            // For Airtable URLs route through our serverless relay to bypass CORS.
+            const urlForFetch = isAirtableUrl
+                ? `/api/airtableCsv?url=${encodeURIComponent(csvUrl)}`
+                : csvUrl;
+
+            const res = await fetch(urlForFetch);
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+
+            const contentType = res.headers.get("content-type") || "";
+            if (!contentType.includes("text/csv")) {
+                // Something went wrong – probably HTML error page
+                const errorText = await res.text();
+                console.error(
+                    "Expected CSV but received:",
+                    errorText.slice(0, 500)
+                );
+                throw new Error(
+                    "Response was not CSV – see console for details."
+                );
+            }
+
             const text = await res.text();
             parsedResult = parseData(text);
             if (parsedResult) {
                 setData(parsedResult.headers, parsedResult.rows);
             } else {
-                setData([], []); // Clear data if parsing failed
-                if (!isPrecache) {
-                    // Only alert if not precaching and parsing failed
-                    alert("Failed to parse the data from the source.");
-                }
+                setData([], []);
+                if (!isPrecache)
+                    alert("Failed to parse the data from the source CSV.");
             }
         } catch (error) {
-            console.error("Error fetching or parsing URL:", error);
+            console.error("Error fetching or parsing CSV", { csvUrl, error });
             if (!isPrecache) {
-                // Only alert on explicit user action
                 alert(
-                    `Failed to load data from URL. Check permissions or URL. Error: ${
+                    `Failed to load data. Error: ${
                         error instanceof Error ? error.message : String(error)
                     }`
                 );
             }
-            setData([], []); // Clear data on fetch error
-            parsedResult = null; // Ensure null is returned on error
+            setData([], []);
+            parsedResult = null;
         } finally {
             setIsLoadingSpreadsheet(false);
         }
-        return parsedResult; // Return the result (or null if failed)
+        return parsedResult;
     };
 
     // --- Effect Hook for Pre-caching ---

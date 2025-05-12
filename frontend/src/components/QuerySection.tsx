@@ -230,7 +230,7 @@ function QuerySection({
                             {/* Google Sheet URL Input Group */}
                             <div className="input-group">
                                 <Label htmlFor="sheet-url">
-                                    Google Sheet URL
+                                    Google Sheet or Airtable URL
                                 </Label>
                                 <Input
                                     id="sheet-url"
@@ -240,7 +240,7 @@ function QuerySection({
                                         handleUrlChange(e.target.value)
                                     }
                                     onKeyDown={handleKeyDown}
-                                    placeholder="Enter Google Sheet URL..."
+                                    placeholder="Enter Google Sheet or Airtable shared view URL..."
                                 />
                             </div>
                         </div>

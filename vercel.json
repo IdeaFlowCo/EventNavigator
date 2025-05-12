@@ -1,9 +1,5 @@
 {
     "buildCommand": "cd frontend && npm ci && npm run build",
 
-    "outputDirectory": "frontend/dist",
-
-    "functions": {
-        "api/**/*.ts": { "runtime": "nodejs20" }
-    }
+    "outputDirectory": "frontend/dist"
 }

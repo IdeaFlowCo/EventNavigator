@@ -94,36 +94,13 @@ function AppLayout() {
         }
 
         // Map user-facing URL -> raw CSV download URL
-        let csvUrl: string | null = null;
+        let csvUrl: string;
         if (isGoogleSheetUrl) {
             // Google Sheets export URL pattern
             csvUrl = url.replace(/\/edit.*$/, "/export?format=csv");
-        } else if (isAirtableUrl) {
-            // Extract view/share identifier.
-            const viewIdMatch = url.match(/\/(viw|shr)[A-Za-z0-9]+/);
-
-            if (!viewIdMatch) {
-                console.error("Failed to extract Airtable view ID from URL", {
-                    url,
-                    viewIdMatch,
-                });
-                if (!isPrecache)
-                    alert(
-                        "Could not read Airtable IDs from the link. Make sure you paste a shared VIEW link (it should contain both an app… and viw… segment)."
-                    );
-                return null;
-            }
-
-            const viewId = viewIdMatch[0].replace("/", ""); // remove leading slash
-
-            // Public shared-view CSV endpoint (does not require auth)
-            csvUrl = `https://airtable.com/v0.3/view/${viewId}?exportCSV=true`;
-        }
-
-        // Defensive guard – should never be null here
-        if (!csvUrl) {
-            console.error("CSV URL generation failed", { url });
-            return null;
+        } else {
+            // For Airtable we delegate CSV conversion to the serverless proxy.
+            csvUrl = url; // keep original link (shr… or viw…)
         }
 
         console.log("Fetching CSV from", csvUrl);

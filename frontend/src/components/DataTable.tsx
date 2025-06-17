@@ -67,11 +67,19 @@ const DataTable: React.FC = () => {
             maxSize: 60,
             enableResizing: false,
             cell: ({ row }: CellContext<string[], unknown>) => {
+                // If no UID column exists, disable favorites functionality
+                if (uidColumnIndex < 0) {
+                    return (
+                        <div
+                            className="favorite-icon-wrapper disabled"
+                            title="No UID column found - favorites disabled"
+                        >
+                            <Heart size={24} className="favorite-icon" />
+                        </div>
+                    );
+                }
                 // Ensure uidColumnIndex is valid before proceeding
-                if (
-                    uidColumnIndex < 0 ||
-                    uidColumnIndex >= row.original.length
-                ) {
+                if (uidColumnIndex >= row.original.length) {
                     console.error("Invalid UID column index:", uidColumnIndex);
                     return null; // Or render an error indicator
                 }

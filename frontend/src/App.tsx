@@ -233,6 +233,10 @@ function AppLayout() {
                 } else {
                     alert("Unsupported file type.");
                 }
+                // Add the missing setData call for file uploads
+                if (parsedResult) {
+                    setData(parsedResult.headers, parsedResult.rows);
+                }
             } catch (error) {
                 console.error("Error reading or parsing file:", error);
                 alert(

@@ -141,9 +141,7 @@ function QuerySection({
     // Determine if the submit button should be disabled
     const isSubmitDisabled =
         isLoading ||
-        isLoadingSpreadsheet || // Disable if any loading is happening
-        (activeTab === "url" && !sheetUrl) || // Still require URL if URL tab is active
-        (activeTab === "upload" && !file); // Still require File if Upload tab is active
+        isLoadingSpreadsheet; // Only disable if something is loading
 
     return (
         // Apply class name for Query Section container

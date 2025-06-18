@@ -647,7 +647,8 @@ function AppLayout() {
                                     border: "1px solid #dee2e6",
                                     borderRadius: "6px",
                                     fontSize: "14px",
-                                    outline: "none"
+                                    outline: "none",
+                                    boxSizing: "border-box"
                                 }}
                             />
                             {shortlinkError && (
@@ -692,7 +693,8 @@ function AppLayout() {
                                             border: "1px solid #dee2e6",
                                             borderRadius: "6px",
                                             backgroundColor: "#f8f9fa",
-                                            fontSize: "14px"
+                                            fontSize: "14px",
+                                            boxSizing: "border-box"
                                         }}
                                     />
                                     <button

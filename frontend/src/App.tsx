@@ -243,11 +243,13 @@ function AppLayout() {
 
     // Functions for shortlink modal
     const openShortlinkModal = () => {
+        console.log("Opening shortlink modal, current sheetUrl:", sheetUrl);
         // Pre-populate with current sheet URL if available
         if (sheetUrl) {
             setShortlinkInput(sheetUrl);
         }
         setIsShortlinkModalOpen(true);
+        console.log("Modal state set to:", true);
     };
 
     const closeShortlinkModal = () => {
@@ -599,12 +601,37 @@ function AppLayout() {
 
             {/* Shortlink Modal */}
             {isShortlinkModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeShortlinkModal}>
-                    <div className="bg-white rounded-lg p-6 max-w-md mx-4 w-full" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="text-xl font-semibold mb-4">Create Shareable Link</h2>
+                <div 
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 50
+                    }}
+                    onClick={closeShortlinkModal}
+                >
+                    <div 
+                        style={{
+                            backgroundColor: "white",
+                            borderRadius: "8px",
+                            padding: "24px",
+                            maxWidth: "28rem",
+                            margin: "0 16px",
+                            width: "100%",
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "16px" }}>Create Shareable Link</h2>
                         
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">Enter your spreadsheet URL:</label>
+                        <div style={{ marginBottom: "16px" }}>
+                            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "8px" }}>Enter your spreadsheet URL:</label>
                             <input
                                 type="text"
                                 value={shortlinkInput}
@@ -614,41 +641,81 @@ function AppLayout() {
                                     setGeneratedShortlink("");
                                 }}
                                 placeholder="https://docs.google.com/spreadsheets/d/..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                style={{
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "1px solid #dee2e6",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    outline: "none"
+                                }}
                             />
                             {shortlinkError && (
-                                <p className="text-red-500 text-sm mt-1">{shortlinkError}</p>
+                                <p style={{ color: "#dc3545", fontSize: "0.875rem", marginTop: "4px" }}>{shortlinkError}</p>
                             )}
                         </div>
 
                         {!generatedShortlink && (
                             <button
                                 onClick={generateShortlink}
-                                className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors mb-4"
+                                style={{
+                                    width: "100%",
+                                    backgroundColor: "#cc5500",
+                                    color: "white",
+                                    padding: "8px 16px",
+                                    borderRadius: "6px",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    fontSize: "14px",
+                                    fontWeight: 500,
+                                    marginBottom: "16px",
+                                    transition: "background-color 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#b34700"}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#cc5500"}
                             >
                                 Generate Link
                             </button>
                         )}
 
                         {generatedShortlink && (
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">Your shareable link:</label>
-                                <div className="flex gap-2">
+                            <div style={{ marginBottom: "16px" }}>
+                                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "8px" }}>Your shareable link:</label>
+                                <div style={{ display: "flex", gap: "8px" }}>
                                     <input
                                         type="text"
                                         value={generatedShortlink}
                                         readOnly
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                        style={{
+                                            flex: 1,
+                                            padding: "8px 12px",
+                                            border: "1px solid #dee2e6",
+                                            borderRadius: "6px",
+                                            backgroundColor: "#f8f9fa",
+                                            fontSize: "14px"
+                                        }}
                                     />
                                     <button
                                         onClick={copyToClipboard}
-                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2"
+                                        style={{
+                                            padding: "8px 16px",
+                                            backgroundColor: "#e9ecef",
+                                            border: "none",
+                                            borderRadius: "6px",
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                            transition: "background-color 0.2s"
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#dee2e6"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#e9ecef"}
                                         title="Copy to clipboard"
                                     >
                                         {showCopied ? (
                                             <>
-                                                <Check size={20} className="text-green-600" />
-                                                <span className="text-green-600">Copied!</span>
+                                                <Check size={20} style={{ color: "#28a745" }} />
+                                                <span style={{ color: "#28a745" }}>Copied!</span>
                                             </>
                                         ) : (
                                             <>
@@ -658,13 +725,26 @@ function AppLayout() {
                                         )}
                                     </button>
                                 </div>
-                                <p className="text-green-600 text-sm mt-2">✓ Link generated successfully!</p>
+                                <p style={{ color: "#28a745", fontSize: "0.875rem", marginTop: "8px" }}>✓ Link generated successfully!</p>
                             </div>
                         )}
 
                         <button
                             onClick={closeShortlinkModal}
-                            className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
+                            style={{
+                                width: "100%",
+                                backgroundColor: "#e9ecef",
+                                color: "#495057",
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                                transition: "background-color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#dee2e6"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#e9ecef"}
                         >
                             Close
                         </button>

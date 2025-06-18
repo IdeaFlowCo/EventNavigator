@@ -4,7 +4,7 @@ import './ResizeOverlay.css';
 
 interface ResizeOverlayProps {
     table: Table<any>;
-    containerRef: React.RefObject<HTMLDivElement>;
+    containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 interface HandlePosition {
@@ -16,7 +16,6 @@ interface HandlePosition {
 const ResizeOverlay: React.FC<ResizeOverlayProps> = ({ table, containerRef }) => {
     const [handlePositions, setHandlePositions] = useState<HandlePosition[]>([]);
     const [containerHeight, setContainerHeight] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
     const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const rafRef = useRef<number | null>(null);
@@ -77,7 +76,6 @@ const ResizeOverlay: React.FC<ResizeOverlayProps> = ({ table, containerRef }) =>
         
         // Use requestAnimationFrame for smooth updates
         rafRef.current = requestAnimationFrame(() => {
-            setScrollLeft(containerRef.current?.scrollLeft || 0);
             calculatePositions();
         });
     }, [calculatePositions, containerRef]);

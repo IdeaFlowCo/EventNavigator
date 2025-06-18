@@ -151,23 +151,31 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         [headers, allRows, setViewMode] // Add dependencies
     );
 
+    // Function to generate a unique ID for each row (must match DataTable logic)
+    const generateRowId = useCallback((row: string[], index: number): string => {
+        // If there's a UID column, use it
+        if (uidColumnIndex >= 0 && uidColumnIndex < row.length) {
+            return row[uidColumnIndex];
+        }
+        // Otherwise, create an ID from row content
+        // Use first 3 columns (or all if less) plus index to create a stable ID
+        const significantColumns = row.slice(0, 3).join('|');
+        return `row-${index}-${significantColumns}`;
+    }, [uidColumnIndex]);
+
     // Effect to update filteredRows when viewMode or favorites change
     useEffect(() => {
         if (viewMode === "favorites") {
-            if (uidColumnIndex === -1) {
-                console.warn("UID column not found, cannot filter favorites.");
-                setFilteredRows([]);
-                return;
-            }
-            const favRows = allRows.filter((row) =>
-                favoriteIds.has(row[uidColumnIndex])
-            );
+            const favRows = allRows.filter((row, index) => {
+                const rowId = generateRowId(row, index);
+                return favoriteIds.has(rowId);
+            });
             setFilteredRows(favRows);
         } else if (viewMode === "all") {
             setFilteredRows(allRows);
         }
         // 'search' view is handled by runSearchQuery
-    }, [viewMode, favoriteIds, allRows, uidColumnIndex]);
+    }, [viewMode, favoriteIds, allRows, generateRowId]);
 
     return (
         <DataContext.Provider

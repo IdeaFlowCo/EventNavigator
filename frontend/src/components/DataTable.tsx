@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useCallback } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -58,6 +58,18 @@ const DataTable: React.FC = () => {
     };
 
     // Define the Actions column separately
+    // Function to generate a unique ID for each row based on its content
+    const generateRowId = useCallback((row: string[], index: number): string => {
+        // If there's a UID column, use it
+        if (uidColumnIndex >= 0 && uidColumnIndex < row.length) {
+            return row[uidColumnIndex];
+        }
+        // Otherwise, create an ID from row content
+        // Use first 3 columns (or all if less) plus index to create a stable ID
+        const significantColumns = row.slice(0, 3).join('|');
+        return `row-${index}-${significantColumns}`;
+    }, [uidColumnIndex]);
+
     const actionsColumn: ColumnDef<string[]> = useMemo(
         () => ({
             id: "actions",
@@ -67,23 +79,7 @@ const DataTable: React.FC = () => {
             maxSize: 60,
             enableResizing: false,
             cell: ({ row }: CellContext<string[], unknown>) => {
-                // If no UID column exists, disable favorites functionality
-                if (uidColumnIndex < 0) {
-                    return (
-                        <div
-                            className="favorite-icon-wrapper disabled"
-                            title="No UID column found - favorites disabled"
-                        >
-                            <Heart size={24} className="favorite-icon" />
-                        </div>
-                    );
-                }
-                // Ensure uidColumnIndex is valid before proceeding
-                if (uidColumnIndex >= row.original.length) {
-                    console.error("Invalid UID column index:", uidColumnIndex);
-                    return null; // Or render an error indicator
-                }
-                const uid = row.original[uidColumnIndex];
+                const uid = generateRowId(row.original, row.index);
                 const isFavorited = favoriteIds.has(uid);
 
                 // Correct event type for div onClick
@@ -127,7 +123,7 @@ const DataTable: React.FC = () => {
                 );
             },
         }),
-        [favoriteIds, addFavorite, removeFavorite, uidColumnIndex]
+        [favoriteIds, addFavorite, removeFavorite, generateRowId]
     );
 
     const dataColumns = useMemo<ColumnDef<string[]>[]>(() => {

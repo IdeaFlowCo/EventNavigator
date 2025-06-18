@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { generateRowId } from "../utils/rowIdGenerator";
+import ResizeOverlay from "./ResizeOverlay";
 import "./DataTable.css";
 // import { Button } from "./ui/button"; // Remove Button import
 
@@ -234,7 +235,7 @@ const DataTable: React.FC = () => {
     }
 
     return (
-        <div ref={tableContainerRef} className="table-container">
+        <div ref={tableContainerRef} className="table-container" style={{ position: 'relative' }}>
             <table className="data-table">
                 <thead className="table-header">
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -356,6 +357,7 @@ const DataTable: React.FC = () => {
                     })}
                 </tbody>
             </table>
+            <ResizeOverlay table={table} containerRef={tableContainerRef} />
         </div>
     );
 };

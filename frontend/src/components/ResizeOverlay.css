@@ -1,0 +1,94 @@
+/* ResizeOverlay styles */
+.resize-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none; /* Allow clicks through to table */
+    z-index: 5; /* Above table elements for handles to work */
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    width: 20px; /* Wide hit area for easier grabbing */
+    height: 100%;
+    cursor: col-resize;
+    pointer-events: auto; /* Enable interaction on handles only */
+    user-select: none;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    opacity: 0; /* Hidden by default */
+    transform: translateX(-50%); /* Center the handle on the border */
+}
+
+/* Show handles on container hover */
+.table-container:hover .resize-handle {
+    opacity: 1;
+}
+
+/* Always show active handle */
+.resize-handle.active {
+    opacity: 1;
+}
+
+/* Visual line indicator */
+.resize-handle-line {
+    width: 1px;
+    height: 100%;
+    background-color: #dee2e6; /* Match table border color */
+    transition: background-color 0.2s ease, width 0.2s ease;
+}
+
+/* Hover state */
+.resize-handle:hover .resize-handle-line {
+    background-color: #adb5bd; /* Darker on hover */
+    width: 2px; /* Slightly thicker on hover */
+}
+
+/* Active resize state */
+.resize-handle.active .resize-handle-line {
+    background-color: #0d6efd; /* Primary color when dragging */
+    width: 3px; /* Thicker during resize */
+    box-shadow: 0 0 4px rgba(13, 110, 253, 0.3); /* Subtle glow */
+}
+
+/* Ensure handles work with table z-index hierarchy */
+.resize-handle {
+    z-index: 5; /* Above all table elements including sticky columns */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .resize-handle {
+        width: 30px; /* Wider hit area for touch */
+    }
+    
+    /* Always show handles on mobile for better discoverability */
+    .resize-handle {
+        opacity: 0.7;
+    }
+    
+    .resize-handle.active {
+        opacity: 1;
+    }
+}
+
+/* Performance optimization: GPU acceleration for transforms */
+.resize-handle {
+    will-change: transform, left;
+}
+
+/* Prevent handle from appearing over scrollbar */
+.resize-overlay {
+    overflow: hidden;
+}
+
+/* Debug mode - uncomment to visualize handle positions */
+/* .resize-handle {
+    background-color: rgba(255, 0, 0, 0.1);
+    opacity: 1 !important;
+} */

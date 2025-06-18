@@ -485,11 +485,12 @@ function AppLayout() {
                         {/* Action Buttons Container */}
                         <div className="table-action-buttons" style={{
                             position: "absolute",
-                            top: "10px",
-                            right: "10px",
+                            top: "0",
+                            right: "0",
                             display: "flex",
                             gap: "10px",
-                            zIndex: 10
+                            zIndex: 10,
+                            padding: "10px"
                         }}>
                             {/* Create Shortlink Button - only show if we have data loaded */}
                             {sheetUrl && (
@@ -536,7 +537,11 @@ function AppLayout() {
                                     setViewMode(nextView);
                                 }}
                                 data-favorited={viewMode === "favorites"} // Data attribute for CSS styling
-                                // style prop removed - positioning handled in App.css
+                                style={{
+                                    position: "static",  // Override absolute positioning
+                                    top: "auto",
+                                    right: "auto"
+                                }}
                             >
                                 <Heart
                                 // className removed - styling handled in App.css

@@ -28,6 +28,7 @@ interface QuerySectionProps {
     onTabChange: (value: "url" | "upload") => void;
     onAboutMeChange: (value: string) => void;
     onSubmit: () => void;
+    onClearSearch?: () => void;
 }
 
 function QuerySection({
@@ -45,16 +46,17 @@ function QuerySection({
     onTabChange,
     onAboutMeChange,
     onSubmit,
+    onClearSearch,
 }: QuerySectionProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const queryInputRef = useRef<HTMLInputElement>(null);
     const urlInputRef = useRef<HTMLInputElement>(null);
     const queryUploadInputRef = useRef<HTMLInputElement>(null);
 
-    // Handle cmd/ctrl+enter to submit
+    // Handle enter to submit
     const handleKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            if (e.key === "Enter") {
                 const canSubmit =
                     activeTab === "url"
                         ? query &&
@@ -122,13 +124,17 @@ function QuerySection({
     const clearQuery = useCallback(() => {
         setTimeout(() => {
             onQueryChange("");
+            // Also clear search results if onClearSearch is provided
+            if (onClearSearch) {
+                onClearSearch();
+            }
             if (activeTab === "url" && queryInputRef.current) {
                 queryInputRef.current.focus();
             } else if (activeTab === "upload" && queryUploadInputRef.current) {
                 queryUploadInputRef.current.focus();
             }
         }, 0);
-    }, [activeTab, onQueryChange]);
+    }, [activeTab, onQueryChange, onClearSearch]);
 
     // Clear the selected file (Added previously for Tailwind version, useful here too)
     const clearFile = useCallback(() => {

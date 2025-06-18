@@ -18,6 +18,7 @@ function AppLayout() {
         // isDisplayingFullData, // Removed
         viewMode, // Added
         lastNonFavoriteViewMode, // Added
+        filteredRows, // Added to get count of results
         setViewMode, // Added
         setData,
         runSearchQuery,
@@ -247,6 +248,10 @@ function AppLayout() {
         // Pre-populate with current sheet URL if available
         if (sheetUrl) {
             setShortlinkInput(sheetUrl);
+            // Immediately generate the shortlink
+            const encodedUrl = encodeURIComponent(sheetUrl.trim());
+            const shortlink = `${window.location.origin}/?url=${encodedUrl}`;
+            setGeneratedShortlink(shortlink);
         }
         setIsShortlinkModalOpen(true);
         console.log("Modal state set to:", true);
@@ -444,6 +449,7 @@ function AppLayout() {
                     onTabChange={handleTabChange}
                     onAboutMeChange={handleAboutMeChange}
                     onSubmit={handleSubmit}
+                    onClearSearch={() => setViewMode("all")}
                 />
 
                 {/* Conditional Rendering for Table Area with Button Repositioned */}
@@ -457,10 +463,10 @@ function AppLayout() {
                         {/* Heading */}
                         <h2 className="text-lg font-semibold mb-2" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             {viewMode === "favorites"
-                                ? "My Favorites"
+                                ? `My Favorites (${filteredRows.length})`
                                 : viewMode === "search"
-                                ? "Search Results"
-                                : "All Events"}
+                                ? `${filteredRows.length} Search Results`
+                                : `All Events (${filteredRows.length})`}
                             {viewMode === "search" && (
                                 <button
                                     onClick={() => setViewMode("all")}
@@ -651,56 +657,11 @@ function AppLayout() {
                         >
                             <X size={20} />
                         </button>
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "16px" }}>Create Shareable Link</h2>
+                        <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "16px" }}>Shareable Link</h2>
                         
-                        <div style={{ marginBottom: "16px" }}>
-                            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "8px" }}>Enter your spreadsheet URL:</label>
-                            <input
-                                type="text"
-                                value={shortlinkInput}
-                                onChange={(e) => {
-                                    setShortlinkInput(e.target.value);
-                                    setShortlinkError("");
-                                    setGeneratedShortlink("");
-                                }}
-                                placeholder="https://docs.google.com/spreadsheets/d/..."
-                                style={{
-                                    width: "100%",
-                                    padding: "8px 12px",
-                                    border: "1px solid #dee2e6",
-                                    borderRadius: "6px",
-                                    fontSize: "14px",
-                                    outline: "none",
-                                    boxSizing: "border-box"
-                                }}
-                            />
-                            {shortlinkError && (
-                                <p style={{ color: "#dc3545", fontSize: "0.875rem", marginTop: "4px" }}>{shortlinkError}</p>
-                            )}
-                        </div>
-
-                        {!generatedShortlink && (
-                            <button
-                                onClick={generateShortlink}
-                                style={{
-                                    width: "100%",
-                                    backgroundColor: "#cc5500",
-                                    color: "white",
-                                    padding: "8px 16px",
-                                    borderRadius: "6px",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    fontSize: "14px",
-                                    fontWeight: 500,
-                                    marginBottom: "16px",
-                                    transition: "background-color 0.2s"
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#b34700"}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#cc5500"}
-                            >
-                                Generate Link
-                            </button>
-                        )}
+                        <p style={{ fontSize: "0.875rem", color: "#6c757d", marginBottom: "16px" }}>
+                            Share this link to let others instantly access this event spreadsheet:
+                        </p>
 
                         {generatedShortlink && (
                             <div style={{ marginBottom: "16px" }}>

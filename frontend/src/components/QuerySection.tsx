@@ -59,10 +59,12 @@ function QuerySection({
             if (e.key === "Enter") {
                 const canSubmit =
                     activeTab === "url"
-                        ? query &&
-                          sheetUrl &&
-                          (!isLoading || isLoadingSpreadsheet)
-                        : query && file && (!isLoading || isLoadingSpreadsheet);
+                        ? sheetUrl && // Allow submit with just URL (query is optional)
+                          !isLoading && 
+                          !isLoadingSpreadsheet
+                        : file && // For upload tab, file is required (query is optional)
+                          !isLoading && 
+                          !isLoadingSpreadsheet;
 
                 if (canSubmit) {
                     onSubmit();
@@ -71,7 +73,6 @@ function QuerySection({
         },
         [
             activeTab,
-            query,
             sheetUrl,
             file,
             isLoading,

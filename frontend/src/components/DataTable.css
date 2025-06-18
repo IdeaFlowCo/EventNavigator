@@ -11,6 +11,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed; /* Restore fixed layout for virtualization */
+    position: relative; /* Ensure proper positioning context */
 }
 
 .table-header {
@@ -21,8 +22,15 @@
     border-bottom: 2px solid #dee2e6; /* Header bottom border */
 }
 
+.table-header tr {
+    display: flex; /* Match row display for alignment */
+    width: 100%;
+}
+
 .table-header-cell {
     /* width is set inline */
+    flex-shrink: 0; /* Prevent shrinking */
+    flex-grow: 0; /* Prevent growing */
     border-bottom: 1px solid #dee2e6;
     padding: 10px 12px; /* Adjusted padding */
     text-align: left;
@@ -44,15 +52,14 @@
 
 .table-body {
     position: relative; /* Needed for absolute positioned rows */
+    display: block; /* Needed for proper height calculation */
 }
 
 .table-row {
-    position: absolute; /* Needed for virtualization */
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* height and transform are set inline */
-    /* display: flex; */ /* Removed flex from row */
+    /* position: absolute; is set inline for virtualization */
+    /* top, left, width, transform are set inline */
+    display: flex; /* Use flexbox for consistent column widths */
+    align-items: stretch; /* Ensure cells stretch to full height */
 }
 
 .table-row.even {
@@ -65,6 +72,8 @@
 
 .table-cell {
     /* width is set inline */
+    flex-shrink: 0; /* Prevent shrinking */
+    flex-grow: 0; /* Prevent growing */
     padding: 9px 12px; /* Adjusted padding */
     border-right: 1px solid #e9ecef; /* Lighter cell border */
     font-size: 0.9rem; /* Slightly smaller cell font */
@@ -170,7 +179,6 @@
     transform: translateX(50%); /* Center handle over the border */
     z-index: 2; /* Ensure it's above header content */
     opacity: 0; /* Hide grip icon by default */
-    transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
     transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
@@ -307,4 +315,34 @@ td.sticky-col {
 .favorite-icon-wrapper.favorited:hover .favorite-icon {
     fill: #b34700; /* Darker orange on hover */
     stroke: #b34700;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+    .table-container {
+        height: 50vh; /* Reduce height on mobile */
+        font-size: 0.875rem; /* Smaller font */
+    }
+    
+    .table-header-cell,
+    .table-cell {
+        padding: 6px 8px; /* Reduce padding */
+        font-size: 0.8rem; /* Smaller text */
+    }
+    
+    /* Hide resizer on mobile */
+    .resizer {
+        display: none;
+    }
+    
+    /* Adjust minimum column widths for mobile */
+    .data-table {
+        min-width: 600px; /* Force horizontal scroll if needed */
+    }
+}
+
+/* Ensure proper alignment even with different content heights */
+.table-header-cell,
+.table-cell {
+    box-sizing: border-box; /* Include padding and border in width calculations */
 }

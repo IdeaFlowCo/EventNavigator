@@ -18,6 +18,7 @@ import {
     Heart, // Import Heart icon
 } from "lucide-react";
 import { useData } from "../context/DataContext";
+import { generateRowId } from "../utils/rowIdGenerator";
 import "./DataTable.css";
 // import { Button } from "./ui/button"; // Remove Button import
 
@@ -34,6 +35,33 @@ const DataTable: React.FC = () => {
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+
+    // Validate data consistency
+    const validatedRows = useMemo(() => {
+        if (!Array.isArray(filteredRows)) return [];
+        
+        return filteredRows.filter((row, index) => {
+            if (!Array.isArray(row)) {
+                console.warn(`Invalid row at index ${index}: not an array`);
+                return false;
+            }
+            // Ensure row has same number of columns as headers
+            if (row.length !== headers.length) {
+                console.warn(`Row ${index} has ${row.length} columns, expected ${headers.length}`);
+                // Pad or trim the row to match headers
+                const adjustedRow = [...row];
+                while (adjustedRow.length < headers.length) {
+                    adjustedRow.push(''); // Pad with empty strings
+                }
+                if (adjustedRow.length > headers.length) {
+                    adjustedRow.length = headers.length; // Trim excess
+                }
+                // Replace the original row with adjusted one
+                filteredRows[index] = adjustedRow;
+            }
+            return true;
+        });
+    }, [filteredRows, headers]);
 
     // Function to estimate initial size based on header length
     const calculateInitialSize = (headerText: string): number => {
@@ -58,16 +86,9 @@ const DataTable: React.FC = () => {
     };
 
     // Define the Actions column separately
-    // Function to generate a unique ID for each row based on its content
-    const generateRowId = useCallback((row: string[], index: number): string => {
-        // If there's a UID column, use it
-        if (uidColumnIndex >= 0 && uidColumnIndex < row.length) {
-            return row[uidColumnIndex];
-        }
-        // Otherwise, create an ID from row content
-        // Use first 3 columns (or all if less) plus index to create a stable ID
-        const significantColumns = row.slice(0, 3).join('|');
-        return `row-${index}-${significantColumns}`;
+    // Use the unified generateRowId function from utils
+    const getRowId = useCallback((row: string[], index: number): string => {
+        return generateRowId(row, index, uidColumnIndex);
     }, [uidColumnIndex]);
 
     const actionsColumn: ColumnDef<string[]> = useMemo(
@@ -79,7 +100,7 @@ const DataTable: React.FC = () => {
             maxSize: 60,
             enableResizing: false,
             cell: ({ row }: CellContext<string[], unknown>) => {
-                const uid = generateRowId(row.original, row.index);
+                const uid = getRowId(row.original, row.index);
                 const isFavorited = favoriteIds.has(uid);
 
                 // Correct event type for div onClick
@@ -123,7 +144,7 @@ const DataTable: React.FC = () => {
                 );
             },
         }),
-        [favoriteIds, addFavorite, removeFavorite, generateRowId]
+        [favoriteIds, addFavorite, removeFavorite, getRowId]
     );
 
     const dataColumns = useMemo<ColumnDef<string[]>[]>(() => {
@@ -147,7 +168,7 @@ const DataTable: React.FC = () => {
     );
 
     const table = useReactTable({
-        data: filteredRows,
+        data: validatedRows, // Use validated rows instead
         columns,
         columnResizeMode: "onChange",
         state: {
@@ -211,7 +232,11 @@ const DataTable: React.FC = () => {
                             {headerGroup.headers.map((header) => (
                                 <th
                                     key={header.id}
-                                    style={{ width: header.getSize() }}
+                                    style={{ 
+                                        width: header.getSize(),
+                                        minWidth: header.getSize(),
+                                        maxWidth: header.getSize()
+                                    }}
                                     // Add sticky class for the actions column header
                                     className={`table-header-cell ${
                                         header.id === "actions"
@@ -268,7 +293,7 @@ const DataTable: React.FC = () => {
                         </tr>
                     ))}
                 </thead>
-                <tbody
+                <tbody 
                     className="table-body"
                     style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
                 >
@@ -284,13 +309,21 @@ const DataTable: React.FC = () => {
                                     virtualRow.index % 2 ? "odd" : "even"
                                 }`}
                                 style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
                                     transform: `translateY(${virtualRow.start}px)`,
                                 }}
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <td
                                         key={cell.id}
-                                        style={{ width: cell.column.getSize() }}
+                                        style={{ 
+                                            width: cell.column.getSize(),
+                                            minWidth: cell.column.getSize(),
+                                            maxWidth: cell.column.getSize()
+                                        }}
                                         // Add sticky class for the actions column cell
                                         className={`table-cell ${
                                             cell.column.id === "actions"

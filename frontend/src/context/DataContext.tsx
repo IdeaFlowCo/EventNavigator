@@ -8,6 +8,7 @@ import {
     useCallback,
 } from "react";
 import { runSearch } from "../utils/search";
+import { generateRowId } from "../utils/rowIdGenerator";
 
 type ViewMode = "all" | "search" | "favorites";
 
@@ -54,11 +55,22 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         // Load favorites from localStorage on initial load
         try {
             const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
-            return storedFavorites
-                ? new Set(JSON.parse(storedFavorites))
-                : new Set();
+            if (storedFavorites) {
+                const parsed = JSON.parse(storedFavorites);
+                // Validate that it's an array
+                if (Array.isArray(parsed)) {
+                    return new Set(parsed);
+                }
+            }
+            return new Set();
         } catch (error) {
             console.error("Error reading favorites from localStorage:", error);
+            // Clear corrupted data
+            try {
+                localStorage.removeItem(FAVORITES_STORAGE_KEY);
+            } catch (e) {
+                // Ignore if we can't clear
+            }
             return new Set();
         }
     });
@@ -73,12 +85,27 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     // Persist favorites to localStorage whenever they change
     useEffect(() => {
         try {
+            const favorites = Array.from(favoriteIds);
+            // Limit the number of favorites to prevent quota exceeded errors
+            if (favorites.length > 1000) {
+                console.warn("Too many favorites, limiting to 1000");
+                favorites.splice(1000);
+            }
             localStorage.setItem(
                 FAVORITES_STORAGE_KEY,
-                JSON.stringify(Array.from(favoriteIds))
+                JSON.stringify(favorites)
             );
         } catch (error) {
             console.error("Error saving favorites to localStorage:", error);
+            // If quota exceeded or other error, try to clear old data
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                try {
+                    localStorage.removeItem(FAVORITES_STORAGE_KEY);
+                    console.warn("localStorage quota exceeded, cleared favorites");
+                } catch (e) {
+                    // Ignore
+                }
+            }
         }
     }, [favoriteIds]);
 
@@ -151,23 +178,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         [headers, allRows, setViewMode] // Add dependencies
     );
 
-    // Function to generate a unique ID for each row (must match DataTable logic)
-    const generateRowId = useCallback((row: string[], index: number): string => {
-        // If there's a UID column, use it
-        if (uidColumnIndex >= 0 && uidColumnIndex < row.length) {
-            return row[uidColumnIndex];
-        }
-        // Otherwise, create an ID from row content
-        // Use first 3 columns (or all if less) plus index to create a stable ID
-        const significantColumns = row.slice(0, 3).join('|');
-        return `row-${index}-${significantColumns}`;
+    // Use the unified generateRowId function from utils
+    const getRowId = useCallback((row: string[], index: number): string => {
+        return generateRowId(row, index, uidColumnIndex);
     }, [uidColumnIndex]);
 
     // Effect to update filteredRows when viewMode or favorites change
     useEffect(() => {
         if (viewMode === "favorites") {
             const favRows = allRows.filter((row, index) => {
-                const rowId = generateRowId(row, index);
+                const rowId = getRowId(row, index);
                 return favoriteIds.has(rowId);
             });
             setFilteredRows(favRows);
@@ -175,7 +195,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             setFilteredRows(allRows);
         }
         // 'search' view is handled by runSearchQuery
-    }, [viewMode, favoriteIds, allRows, generateRowId]);
+    }, [viewMode, favoriteIds, allRows, getRowId]);
 
     return (
         <DataContext.Provider

@@ -38,13 +38,18 @@ const ResizeOverlay: React.FC<ResizeOverlayProps> = ({ table, containerRef }) =>
             const column = columns[index];
             if (!column || !column.getCanResize()) return;
             
+            // Skip the last column - it doesn't need a resize handle
+            if (index === columns.length - 1) return;
+            
             // Get the actual DOM position of the header cell
             const cellRect = headerCell.getBoundingClientRect();
-            // Subtract 1px to align with the border (cells have 1px right border)
-            const rightEdgePosition = cellRect.right - containerRect.left - 1;
+            // Account for horizontal scroll position when table extends beyond viewport
+            const scrollLeft = container.scrollLeft || 0;
+            // Calculate position relative to scrollable container content
+            const rightEdgePosition = cellRect.right - containerRect.left + scrollLeft - 1;
             
             // Check if this handle is within the visible area
-            const isVisible = rightEdgePosition > -20 && rightEdgePosition < containerRect.width + 20;
+            const isVisible = rightEdgePosition > scrollLeft - 20 && rightEdgePosition < scrollLeft + containerRect.width + 20;
             
             positions.push({
                 columnId: column.id,

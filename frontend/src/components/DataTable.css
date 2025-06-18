@@ -5,10 +5,12 @@
     border: 1px solid #dee2e6; /* Match other borders */
     border-radius: 6px; /* Add slight rounding */
     background-color: #ffffff; /* Ensure white background */
+    position: relative; /* Ensure proper positioning context for ResizeOverlay */
 }
 
 .data-table {
-    width: 100%;
+    width: max-content; /* Allow table to expand to content width */
+    min-width: 100%; /* But at least fill the container */
     border-collapse: collapse;
     table-layout: fixed; /* Restore fixed layout for virtualization */
     position: relative; /* Ensure proper positioning context */
@@ -20,11 +22,14 @@
     background: #f8f9fa; /* Header background */
     z-index: 1;
     border-bottom: 2px solid #dee2e6; /* Header bottom border */
+    width: max-content; /* Expand sticky header to full content width */
+    min-width: 100%; /* Ensure it's at least as wide as the container */
 }
 
 .table-header tr {
     display: flex; /* Match row display for alignment */
-    width: 100%;
+    width: max-content; /* Expand to full content width, not viewport */
+    min-width: 100%; /* Ensure it's at least as wide as the container */
 }
 
 .table-header-cell {
@@ -58,6 +63,8 @@
     /* top, left, width, transform are set inline */
     display: flex; /* Use flexbox for consistent column widths */
     align-items: stretch; /* Ensure cells stretch to full height */
+    width: max-content !important; /* Override inline width: 100% */
+    min-width: 100%; /* Ensure it's at least as wide as the container */
 }
 
 .table-row.even {
@@ -167,13 +174,13 @@
 .sticky-col {
     position: sticky;
     left: 0;
-    z-index: 2; /* Ensure it's above non-sticky cells (z-index 1 is header) */
+    z-index: 5; /* Above resize handles (4) */
 }
 
 /* Ensure sticky header cell has correct background and uses text/vertical align */
 .table-header .sticky-col {
     background-color: #f8f9fa; /* Match header background */
-    z-index: 3; /* Above other header cells and sticky body cells */
+    z-index: 6; /* Above other sticky cells (5) to maintain hierarchy */
     /* display: flex; */ /* REMOVED */
     /* align-items: center; */ /* REMOVED */
     /* justify-content: center; */ /* REMOVED */

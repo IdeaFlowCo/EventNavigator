@@ -3,9 +3,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: max-content; /* Match table's expanded width */
+    min-width: 100%; /* At least fill the container */
     pointer-events: none; /* Allow clicks through to table */
-    z-index: 5; /* Above table elements for handles to work */
+    z-index: 4; /* Above regular cells (1) but below sticky column (5) */
 }
 
 .resize-handle {
@@ -16,7 +17,8 @@
     cursor: col-resize;
     pointer-events: auto; /* Enable interaction on handles only */
     user-select: none;
-    touch-action: none;
+    touch-action: none; /* Prevent default touch scrolling on handles */
+    -webkit-touch-callout: none; /* Disable callout on iOS */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -58,7 +60,7 @@
 
 /* Ensure handles work with table z-index hierarchy */
 .resize-handle {
-    z-index: 5; /* Above all table elements including sticky columns */
+    z-index: 4; /* Same as overlay - above cells but below sticky column */
 }
 
 /* Mobile adjustments */
@@ -82,10 +84,10 @@
     will-change: transform, left;
 }
 
-/* Prevent handle from appearing over scrollbar */
-.resize-overlay {
+/* Remove overflow hidden that might clip handles */
+/* .resize-overlay {
     overflow: hidden;
-}
+} */
 
 /* Debug mode - uncomment to visualize handle positions */
 /* .resize-handle {

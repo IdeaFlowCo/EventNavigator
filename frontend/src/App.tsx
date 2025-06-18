@@ -243,6 +243,10 @@ function AppLayout() {
 
     // Functions for shortlink modal
     const openShortlinkModal = () => {
+        // Pre-populate with current sheet URL if available
+        if (sheetUrl) {
+            setShortlinkInput(sheetUrl);
+        }
         setIsShortlinkModalOpen(true);
     };
 
@@ -392,20 +396,6 @@ function AppLayout() {
                             <HelpCircle strokeWidth={2.5} />
                             How it works
                         </button>
-                        {/* Create Shortlink button */}
-                        <button
-                            onClick={openShortlinkModal}
-                            className="nav-link"
-                            style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: 0,
-                            }}
-                        >
-                            <Share2 strokeWidth={2.5} size={20} />
-                            Create Shortlink
-                        </button>
                         {/* Apply class name for Nav Link */}
                         <a
                             href="https://github.com/IdeaFlowCo/EventNavigator"
@@ -492,32 +482,75 @@ function AppLayout() {
                         </h2>
                         {/* DataTable */}
                         <DataTable /> {/* Moved DataTable inside */}
-                        {/* Favorites Button (Standard HTML with custom CSS class) */}
-                        <button
-                            type="button"
-                            className="favorites-toggle-button" // New custom class
-                            onClick={() => {
-                                const nextView =
-                                    viewMode === "favorites"
-                                        ? lastNonFavoriteViewMode
-                                        : "favorites";
-                                setViewMode(nextView);
-                            }}
-                            data-favorited={viewMode === "favorites"} // Data attribute for CSS styling
-                            // style prop removed - positioning handled in App.css
-                        >
-                            <Heart
-                            // className removed - styling handled in App.css
-                            // Size controlled via CSS potentially
-                            />
-                            <span>
-                                {" "}
-                                {/* Wrap text in span for potential styling */}
-                                {viewMode === "favorites"
-                                    ? "Show All"
-                                    : "My Favorites"}
-                            </span>
-                        </button>
+                        {/* Action Buttons Container */}
+                        <div className="table-action-buttons" style={{
+                            position: "absolute",
+                            top: "10px",
+                            right: "10px",
+                            display: "flex",
+                            gap: "10px",
+                            zIndex: 10
+                        }}>
+                            {/* Create Shortlink Button - only show if we have data loaded */}
+                            {sheetUrl && (
+                                <button
+                                    type="button"
+                                    onClick={openShortlinkModal}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "8px 16px",
+                                    backgroundColor: "white",
+                                    border: "1px solid #dee2e6",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    color: "#495057",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease-in-out",
+                                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)"
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = "#f8f9fa";
+                                    e.currentTarget.style.borderColor = "#adb5bd";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = "white";
+                                    e.currentTarget.style.borderColor = "#dee2e6";
+                                }}
+                            >
+                                <Share2 size={18} />
+                                <span>Create Shortlink</span>
+                            </button>
+                            )}
+                            {/* Favorites Button (Standard HTML with custom CSS class) */}
+                            <button
+                                type="button"
+                                className="favorites-toggle-button" // New custom class
+                                onClick={() => {
+                                    const nextView =
+                                        viewMode === "favorites"
+                                            ? lastNonFavoriteViewMode
+                                            : "favorites";
+                                    setViewMode(nextView);
+                                }}
+                                data-favorited={viewMode === "favorites"} // Data attribute for CSS styling
+                                // style prop removed - positioning handled in App.css
+                            >
+                                <Heart
+                                // className removed - styling handled in App.css
+                                // Size controlled via CSS potentially
+                                />
+                                <span>
+                                    {" "}
+                                    {/* Wrap text in span for potential styling */}
+                                    {viewMode === "favorites"
+                                        ? "Show All"
+                                        : "My Favorites"}
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 )}
             </main>

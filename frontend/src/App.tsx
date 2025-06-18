@@ -425,8 +425,7 @@ function AppLayout() {
                     <h1>Find what you want at any event</h1>
                     <p>
                         Discover workshops, performances, talks, and gatherings
-                        from any event schedule or spreadsheet. Find what
-                        matches your interests.
+                        from any event schedule or spreadsheet.
                     </p>
                 </div>
 

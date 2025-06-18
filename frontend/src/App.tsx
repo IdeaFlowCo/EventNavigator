@@ -727,7 +727,6 @@ function AppLayout() {
                                         )}
                                     </button>
                                 </div>
-                                <p style={{ color: "#28a745", fontSize: "0.875rem", marginTop: "8px" }}>✓ Link generated successfully!</p>
                             </div>
                         )}
 

@@ -784,55 +784,53 @@ body {
 
 /* Add styles for the custom favorites toggle button */
 .favorites-toggle-button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex; /* Use flexbox for icon + text alignment */
+    display: inline-flex;
     align-items: center;
-    gap: 0.4rem; /* Space between icon and text */
-    padding: 0.4rem 0.8rem; /* Adjust padding as needed */
-    font-size: 0.875rem; /* text-sm equivalent */
-    font-weight: 500; /* font-medium */
-    line-height: 1.25rem;
-    border-radius: 0.375rem; /* rounded-md */
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease,
         border-color 0.2s ease;
 
     /* Default state - resembles primary button */
-    background-color: var(
-        --primary,
-        #0d6efd /* Blue */
-    ); /* Use theme primary or fallback */
-    color: var(--primary-foreground, white);
-    border-color: var(--primary, #0d6efd);
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
 }
 
 .favorites-toggle-button:hover {
-    background-color: var(
-        --primary-hover,
-        #0b5ed7 /* Darker blue */
-    ); /* Darker shade for hover */
-    border-color: var(--primary-hover, #0b5ed7);
+    background-color: #0b5ed7; /* Darker blue */
+    border-color: #0b5ed7;
 }
 
 .favorites-toggle-button:focus-visible {
-    outline: 2px solid var(--ring, #86b7fe); /* Lighter blue focus ring */
+    outline: 2px solid #86b7fe; /* Lighter blue focus ring */
     outline-offset: 2px;
 }
 
 /* Style the SVG icon inside */
 .favorites-toggle-button svg {
-    width: 1rem; /* h-4 w-4 equivalent */
-    height: 1rem;
+    width: 1.25rem; /* Slightly larger for icon-only button */
+    height: 1.25rem;
     /* Icon color will inherit from button's text color by default */
 }
 
-/* Style the SVG when favorited (using data attribute) */
+/* Style the button and icon when favorited */
+.favorites-toggle-button[data-favorited="true"] {
+    background-color: white;
+    color: #dc3545; /* Red color for favorited */
+    border-color: #dee2e6;
+}
+
+.favorites-toggle-button[data-favorited="true"]:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+}
+
 .favorites-toggle-button[data-favorited="true"] svg {
-    fill: var(--danger, #dc3545); /* Use theme danger or fallback red */
-    color: var(--danger, #dc3545); /* Use theme danger or fallback red */
+    fill: #dc3545; /* Red fill for heart when favorited */
 }
 
 /* Ensure text color doesn't change when favorited unless desired */

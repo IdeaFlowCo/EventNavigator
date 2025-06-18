@@ -127,8 +127,20 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
                 setLastNonFavoriteViewMode(mode); // Track last non-fav view
             }
             setViewModeState(mode);
+            
+            // Immediately update filteredRows to prevent jitter when switching views
+            if (mode === "all") {
+                setFilteredRows(allRows);
+            } else if (mode === "favorites") {
+                const favRows = allRows.filter((row, index) => {
+                    const rowId = generateRowId(row, index, uidColumnIndex);
+                    return favoriteIds.has(rowId);
+                });
+                setFilteredRows(favRows);
+            }
+            // Note: "search" mode filteredRows are set by runSearchQuery
         },
-        [setLastNonFavoriteViewMode, setViewModeState]
+        [setLastNonFavoriteViewMode, setViewModeState, allRows, favoriteIds, uidColumnIndex]
     );
 
     const setData = useCallback(

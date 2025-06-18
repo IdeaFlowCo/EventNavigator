@@ -9,7 +9,7 @@ import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
 // import ResourcesSection from "@/components/ResourcesSection"; // Remove unused import
-import { HelpCircle, Heart, MapPin, Share2 } from "lucide-react"; // Import the HelpCircle, Heart, MapPin & Share2 icons
+import { HelpCircle, Heart, MapPin, Share2, Copy, Check } from "lucide-react"; // Import the HelpCircle, Heart, MapPin, Share2, Copy & Check icons
 
 // Define the main layout and logic component
 function AppLayout() {
@@ -36,6 +36,10 @@ function AppLayout() {
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
         useState<boolean>(false); // State for modal visibility
     const [isShortlinkModalOpen, setIsShortlinkModalOpen] = useState<boolean>(false); // State for shortlink modal
+    const [shortlinkInput, setShortlinkInput] = useState<string>("");
+    const [generatedShortlink, setGeneratedShortlink] = useState<string>("");
+    const [showCopied, setShowCopied] = useState<boolean>(false);
+    const [shortlinkError, setShortlinkError] = useState<string>("");
 
     // --- URL Path to Spreadsheet Mapping ---
     const pathToSpreadsheetMap: { [key: string]: { url: string; title: string } } = {
@@ -168,21 +172,39 @@ function AppLayout() {
         return parsedResult;
     };
 
-    // --- Effect Hook for Pre-caching and URL Path Loading ---
+    // --- Effect Hook for Pre-caching and URL Path/Parameter Loading ---
     useEffect(() => {
-        // Check for custom path in URL
-        const path = window.location.pathname.substring(1); // Remove leading slash
-        if (path && pathToSpreadsheetMap[path]) {
-            const mapping = pathToSpreadsheetMap[path];
-            console.log(`Loading spreadsheet for path "${path}":`, mapping.url);
-            setSheetUrl(mapping.url);
-            // Update the page title
-            document.title = `${mapping.title} - Event Navigator`;
-            fetchAndSetDataFromUrl(mapping.url, true);
-        } else if (sheetUrl) {
-            // Fetch data from the default URL when the component mounts
-            console.log("Attempting to precache default sheet:", sheetUrl);
-            fetchAndSetDataFromUrl(sheetUrl, true); // Pass true for isPrecache
+        // Check for URL parameter first
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlFromParam = urlParams.get('url');
+        
+        if (urlFromParam) {
+            // Validate that it's a Google Sheets or Airtable URL
+            const isValidUrl = urlFromParam.startsWith("https://docs.google.com/spreadsheets/") || 
+                              urlFromParam.startsWith("https://airtable.com/");
+            
+            if (isValidUrl) {
+                console.log("Loading spreadsheet from URL parameter:", urlFromParam);
+                setSheetUrl(urlFromParam);
+                fetchAndSetDataFromUrl(urlFromParam, true);
+            } else {
+                console.warn("Invalid URL parameter - must be Google Sheets or Airtable URL");
+            }
+        } else {
+            // Check for custom path in URL
+            const path = window.location.pathname.substring(1); // Remove leading slash
+            if (path && pathToSpreadsheetMap[path]) {
+                const mapping = pathToSpreadsheetMap[path];
+                console.log(`Loading spreadsheet for path "${path}":`, mapping.url);
+                setSheetUrl(mapping.url);
+                // Update the page title
+                document.title = `${mapping.title} - Event Navigator`;
+                fetchAndSetDataFromUrl(mapping.url, true);
+            } else if (sheetUrl) {
+                // Fetch data from the default URL when the component mounts
+                console.log("Attempting to precache default sheet:", sheetUrl);
+                fetchAndSetDataFromUrl(sheetUrl, true); // Pass true for isPrecache
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty dependency array ensures this runs only once on mount
@@ -226,6 +248,43 @@ function AppLayout() {
 
     const closeShortlinkModal = () => {
         setIsShortlinkModalOpen(false);
+        setShortlinkInput("");
+        setGeneratedShortlink("");
+        setShortlinkError("");
+        setShowCopied(false);
+    };
+
+    const validateSpreadsheetUrl = (url: string): boolean => {
+        return url.startsWith("https://docs.google.com/spreadsheets/") || 
+               url.startsWith("https://airtable.com/");
+    };
+
+    const generateShortlink = () => {
+        if (!shortlinkInput.trim()) {
+            setShortlinkError("Please enter a URL");
+            return;
+        }
+
+        if (!validateSpreadsheetUrl(shortlinkInput.trim())) {
+            setShortlinkError("Please enter a valid Google Sheets or Airtable URL");
+            return;
+        }
+
+        // Generate the shortlink
+        const encodedUrl = encodeURIComponent(shortlinkInput.trim());
+        const shortlink = `${window.location.origin}/?url=${encodedUrl}`;
+        setGeneratedShortlink(shortlink);
+        setShortlinkError("");
+    };
+
+    const copyToClipboard = async () => {
+        try {
+            await navigator.clipboard.writeText(generatedShortlink);
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy:", err);
+        }
     };
 
     const handleSubmit = async () => {
@@ -502,13 +561,72 @@ function AppLayout() {
 
             {/* Shortlink Modal */}
             {isShortlinkModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-                        <h2 className="text-xl font-semibold mb-4">Coming Soon!</h2>
-                        <p className="text-gray-600 mb-4">support: cody@ideaflow.io</p>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeShortlinkModal}>
+                    <div className="bg-white rounded-lg p-6 max-w-md mx-4 w-full" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-xl font-semibold mb-4">Create Shareable Link</h2>
+                        
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-2">Enter your spreadsheet URL:</label>
+                            <input
+                                type="text"
+                                value={shortlinkInput}
+                                onChange={(e) => {
+                                    setShortlinkInput(e.target.value);
+                                    setShortlinkError("");
+                                    setGeneratedShortlink("");
+                                }}
+                                placeholder="https://docs.google.com/spreadsheets/d/..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            />
+                            {shortlinkError && (
+                                <p className="text-red-500 text-sm mt-1">{shortlinkError}</p>
+                            )}
+                        </div>
+
+                        {!generatedShortlink && (
+                            <button
+                                onClick={generateShortlink}
+                                className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors mb-4"
+                            >
+                                Generate Link
+                            </button>
+                        )}
+
+                        {generatedShortlink && (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Your shareable link:</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={generatedShortlink}
+                                        readOnly
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                    />
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2"
+                                        title="Copy to clipboard"
+                                    >
+                                        {showCopied ? (
+                                            <>
+                                                <Check size={20} className="text-green-600" />
+                                                <span className="text-green-600">Copied!</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy size={20} />
+                                                <span>Copy</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                <p className="text-green-600 text-sm mt-2">✓ Link generated successfully!</p>
+                            </div>
+                        )}
+
                         <button
                             onClick={closeShortlinkModal}
-                            className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors"
+                            className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
                         >
                             Close
                         </button>

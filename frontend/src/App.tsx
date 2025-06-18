@@ -9,7 +9,7 @@ import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
 // import ResourcesSection from "@/components/ResourcesSection"; // Remove unused import
-import { HelpCircle, Heart, MapPin } from "lucide-react"; // Import the HelpCircle, Heart & MapPin icons
+import { HelpCircle, Heart, MapPin, Share2 } from "lucide-react"; // Import the HelpCircle, Heart, MapPin & Share2 icons
 
 // Define the main layout and logic component
 function AppLayout() {
@@ -35,12 +35,16 @@ function AppLayout() {
         useState<boolean>(false);
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
         useState<boolean>(false); // State for modal visibility
+    const [isShortlinkModalOpen, setIsShortlinkModalOpen] = useState<boolean>(false); // State for shortlink modal
 
     // --- URL Path to Spreadsheet Mapping ---
-    const pathToSpreadsheetMap: { [key: string]: string } = {
-        humantechweek: "https://docs.google.com/spreadsheets/d/1jTKiF_7aHlqwNWQy94epgHhCNLiTdPcq/edit?usp=sharing&ouid=103820390436928978344&rtpof=true&sd=true",
+    const pathToSpreadsheetMap: { [key: string]: { url: string; title: string } } = {
+        humantechweek: {
+            url: "https://docs.google.com/spreadsheets/d/1jTKiF_7aHlqwNWQy94epgHhCNLiTdPcq/edit?usp=sharing&ouid=103820390436928978344&rtpof=true&sd=true",
+            title: "Human Tech Week"
+        },
         // Add more mappings here as needed
-        // example: "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit",
+        // example: { url: "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit", title: "Event Name" },
     };
 
     // --- Helper function to fetch and parse data ---
@@ -169,10 +173,12 @@ function AppLayout() {
         // Check for custom path in URL
         const path = window.location.pathname.substring(1); // Remove leading slash
         if (path && pathToSpreadsheetMap[path]) {
-            const mappedUrl = pathToSpreadsheetMap[path];
-            console.log(`Loading spreadsheet for path "${path}":`, mappedUrl);
-            setSheetUrl(mappedUrl);
-            fetchAndSetDataFromUrl(mappedUrl, true);
+            const mapping = pathToSpreadsheetMap[path];
+            console.log(`Loading spreadsheet for path "${path}":`, mapping.url);
+            setSheetUrl(mapping.url);
+            // Update the page title
+            document.title = `${mapping.title} - Event Navigator`;
+            fetchAndSetDataFromUrl(mapping.url, true);
         } else if (sheetUrl) {
             // Fetch data from the default URL when the component mounts
             console.log("Attempting to precache default sheet:", sheetUrl);
@@ -211,6 +217,15 @@ function AppLayout() {
     // Function to close the modal
     const closeHowItWorksModal = () => {
         setIsHowItWorksModalOpen(false);
+    };
+
+    // Functions for shortlink modal
+    const openShortlinkModal = () => {
+        setIsShortlinkModalOpen(true);
+    };
+
+    const closeShortlinkModal = () => {
+        setIsShortlinkModalOpen(false);
     };
 
     const handleSubmit = async () => {
@@ -317,6 +332,20 @@ function AppLayout() {
                         >
                             <HelpCircle strokeWidth={2.5} />
                             How it works
+                        </button>
+                        {/* Create Shortlink button */}
+                        <button
+                            onClick={openShortlinkModal}
+                            className="nav-link"
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 0,
+                            }}
+                        >
+                            <Share2 strokeWidth={2.5} size={20} />
+                            Create Shortlink
                         </button>
                         {/* Apply class name for Nav Link */}
                         <a
@@ -470,6 +499,22 @@ function AppLayout() {
                 isOpen={isHowItWorksModalOpen}
                 onClose={closeHowItWorksModal}
             />
+
+            {/* Shortlink Modal */}
+            {isShortlinkModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+                        <h2 className="text-xl font-semibold mb-4">Coming Soon!</h2>
+                        <p className="text-gray-600 mb-4">support: cody@ideaflow.io</p>
+                        <button
+                            onClick={closeShortlinkModal}
+                            className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

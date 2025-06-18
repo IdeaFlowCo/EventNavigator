@@ -28,9 +28,7 @@
 }
 
 .table-header-cell {
-    /* width is set inline */
-    flex-shrink: 0; /* Prevent shrinking */
-    flex-grow: 0; /* Prevent growing */
+    /* width, flex properties are set inline */
     border-bottom: 1px solid #dee2e6;
     padding: 10px 12px; /* Adjusted padding */
     text-align: left;
@@ -71,9 +69,7 @@
 }
 
 .table-cell {
-    /* width is set inline */
-    flex-shrink: 0; /* Prevent shrinking */
-    flex-grow: 0; /* Prevent growing */
+    /* width, flex properties are set inline */
     padding: 9px 12px; /* Adjusted padding */
     border-right: 1px solid #e9ecef; /* Lighter cell border */
     font-size: 0.9rem; /* Slightly smaller cell font */

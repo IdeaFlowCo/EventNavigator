@@ -99,6 +99,9 @@ const DataTable: React.FC = () => {
             minSize: 60,
             maxSize: 60,
             enableResizing: false,
+            meta: {
+                flexGrow: 0, // Actions column shouldn't grow
+            },
             cell: ({ row }: CellContext<string[], unknown>) => {
                 const uid = getRowId(row.original, row.index);
                 const isFavorited = favoriteIds.has(uid);
@@ -148,15 +151,22 @@ const DataTable: React.FC = () => {
     );
 
     const dataColumns = useMemo<ColumnDef<string[]>[]>(() => {
-        return headers.map((header, index) => ({
-            id: String(index), // Keep original index as ID for data columns
-            header: header,
-            accessorFn: (row) => row[index], // Accessor remains the same
-            size: calculateInitialSize(header),
-            minSize: 50,
-            maxSize: 500,
-            // enableResizing: true // Default is true, no need to explicitly set unless overriding
-        }));
+        const minSize = 50; // Base minimum size
+        return headers.map((header, index) => {
+            const size = calculateInitialSize(header);
+            return {
+                id: String(index), // Keep original index as ID for data columns
+                header: header,
+                accessorFn: (row) => row[index], // Accessor remains the same
+                size: size,
+                minSize: minSize,
+                maxSize: 500,
+                meta: {
+                    flexGrow: size / minSize, // Proportional flex-grow based on initial size
+                },
+                // enableResizing: true // Default is true, no need to explicitly set unless overriding
+            };
+        });
         // Filter out the UID column if it exists and we don't want to display it
         // .filter((_, index) => index !== uidColumnIndex); // Optional: Hide UID column
     }, [headers, uidColumnIndex]); // Add uidColumnIndex dependency
@@ -234,8 +244,10 @@ const DataTable: React.FC = () => {
                                     key={header.id}
                                     style={{ 
                                         width: header.getSize(),
-                                        minWidth: header.getSize(),
-                                        maxWidth: header.getSize()
+                                        minWidth: header.column.columnDef.minSize || header.getSize(),
+                                        flexGrow: header.column.columnDef.meta?.flexGrow || 0,
+                                        flexShrink: 0,
+                                        flexBasis: `${header.getSize()}px`
                                     }}
                                     // Add sticky class for the actions column header
                                     className={`table-header-cell ${
@@ -321,8 +333,10 @@ const DataTable: React.FC = () => {
                                         key={cell.id}
                                         style={{ 
                                             width: cell.column.getSize(),
-                                            minWidth: cell.column.getSize(),
-                                            maxWidth: cell.column.getSize()
+                                            minWidth: cell.column.columnDef.minSize || cell.column.getSize(),
+                                            flexGrow: cell.column.columnDef.meta?.flexGrow || 0,
+                                            flexShrink: 0,
+                                            flexBasis: `${cell.column.getSize()}px`
                                         }}
                                         // Add sticky class for the actions column cell
                                         className={`table-cell ${

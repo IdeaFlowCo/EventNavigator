@@ -9,7 +9,7 @@ import QuerySection from "@/components/QuerySection";
 import DataTable from "@/components/DataTable";
 import HowItWorksModal from "@/components/HowItWorksModal"; // Import the modal component
 // import ResourcesSection from "@/components/ResourcesSection"; // Remove unused import
-import { HelpCircle, Heart, MapPin, Share2, Copy, Check } from "lucide-react"; // Import the HelpCircle, Heart, MapPin, Share2, Copy & Check icons
+import { HelpCircle, Heart, MapPin, Share2, Copy, Check, X } from "lucide-react"; // Import the HelpCircle, Heart, MapPin, Share2, Copy, Check & X icons
 
 // Define the main layout and logic component
 function AppLayout() {
@@ -624,10 +624,34 @@ function AppLayout() {
                             maxWidth: "28rem",
                             margin: "0 16px",
                             width: "100%",
-                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+                            position: "relative"
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        <button
+                            onClick={closeShortlinkModal}
+                            style={{
+                                position: "absolute",
+                                top: "12px",
+                                right: "12px",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: "4px",
+                                color: "#6c757d",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRadius: "4px",
+                                transition: "background-color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8f9fa"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                            aria-label="Close modal"
+                        >
+                            <X size={20} />
+                        </button>
                         <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "16px" }}>Create Shareable Link</h2>
                         
                         <div style={{ marginBottom: "16px" }}>
@@ -729,26 +753,6 @@ function AppLayout() {
                                 </div>
                             </div>
                         )}
-
-                        <button
-                            onClick={closeShortlinkModal}
-                            style={{
-                                width: "100%",
-                                backgroundColor: "#e9ecef",
-                                color: "#495057",
-                                padding: "8px 16px",
-                                borderRadius: "6px",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "14px",
-                                fontWeight: 500,
-                                transition: "background-color 0.2s"
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#dee2e6"}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#e9ecef"}
-                        >
-                            Close
-                        </button>
                     </div>
                 </div>
             )}

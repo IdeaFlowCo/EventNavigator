@@ -36,6 +36,13 @@ function AppLayout() {
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
         useState<boolean>(false); // State for modal visibility
 
+    // --- URL Path to Spreadsheet Mapping ---
+    const pathToSpreadsheetMap: { [key: string]: string } = {
+        humantechweek: "https://docs.google.com/spreadsheets/d/1jTKiF_7aHlqwNWQy94epgHhCNLiTdPcq/edit?usp=sharing&ouid=103820390436928978344&rtpof=true&sd=true",
+        // Add more mappings here as needed
+        // example: "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit",
+    };
+
     // --- Helper function to fetch and parse data ---
     const parseData = (
         dataToParse: string[][] | string
@@ -157,11 +164,20 @@ function AppLayout() {
         return parsedResult;
     };
 
-    // --- Effect Hook for Pre-caching ---
+    // --- Effect Hook for Pre-caching and URL Path Loading ---
     useEffect(() => {
-        // Fetch data from the default URL when the component mounts
-        console.log("Attempting to precache default sheet:", sheetUrl);
-        fetchAndSetDataFromUrl(sheetUrl, true); // Pass true for isPrecache
+        // Check for custom path in URL
+        const path = window.location.pathname.substring(1); // Remove leading slash
+        if (path && pathToSpreadsheetMap[path]) {
+            const mappedUrl = pathToSpreadsheetMap[path];
+            console.log(`Loading spreadsheet for path "${path}":`, mappedUrl);
+            setSheetUrl(mappedUrl);
+            fetchAndSetDataFromUrl(mappedUrl, true);
+        } else if (sheetUrl) {
+            // Fetch data from the default URL when the component mounts
+            console.log("Attempting to precache default sheet:", sheetUrl);
+            fetchAndSetDataFromUrl(sheetUrl, true); // Pass true for isPrecache
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty dependency array ensures this runs only once on mount
 
@@ -360,14 +376,31 @@ function AppLayout() {
                         {" "}
                         {/* New wrapper */}
                         {/* Heading */}
-                        <h2 className="text-lg font-semibold mb-2">
-                            {" "}
-                            {/* Moved h2 inside, kept margin */}
+                        <h2 className="text-lg font-semibold mb-2" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             {viewMode === "favorites"
                                 ? "My Favorites"
                                 : viewMode === "search"
                                 ? "Search Results"
                                 : "All Events"}
+                            {viewMode === "search" && (
+                                <button
+                                    onClick={() => setViewMode("all")}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        padding: "4px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        color: "#6c757d",
+                                        fontSize: "16px"
+                                    }}
+                                    title="Clear search and show all events"
+                                    aria-label="Clear search"
+                                >
+                                    ✕
+                                </button>
+                            )}
                         </h2>
                         {/* DataTable */}
                         <DataTable /> {/* Moved DataTable inside */}

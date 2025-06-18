@@ -37,10 +37,8 @@ function AppLayout() {
     const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] =
         useState<boolean>(false); // State for modal visibility
     const [isShortlinkModalOpen, setIsShortlinkModalOpen] = useState<boolean>(false); // State for shortlink modal
-    const [shortlinkInput, setShortlinkInput] = useState<string>("");
     const [generatedShortlink, setGeneratedShortlink] = useState<string>("");
     const [showCopied, setShowCopied] = useState<boolean>(false);
-    const [shortlinkError, setShortlinkError] = useState<string>("");
 
     // --- URL Path to Spreadsheet Mapping ---
     const pathToSpreadsheetMap: { [key: string]: { url: string; title: string } } = {
@@ -247,7 +245,6 @@ function AppLayout() {
         console.log("Opening shortlink modal, current sheetUrl:", sheetUrl);
         // Pre-populate with current sheet URL if available
         if (sheetUrl) {
-            setShortlinkInput(sheetUrl);
             // Immediately generate the shortlink
             const encodedUrl = encodeURIComponent(sheetUrl.trim());
             const shortlink = `${window.location.origin}/?url=${encodedUrl}`;
@@ -259,34 +256,10 @@ function AppLayout() {
 
     const closeShortlinkModal = () => {
         setIsShortlinkModalOpen(false);
-        setShortlinkInput("");
         setGeneratedShortlink("");
-        setShortlinkError("");
         setShowCopied(false);
     };
 
-    const validateSpreadsheetUrl = (url: string): boolean => {
-        return url.startsWith("https://docs.google.com/spreadsheets/") || 
-               url.startsWith("https://airtable.com/");
-    };
-
-    const generateShortlink = () => {
-        if (!shortlinkInput.trim()) {
-            setShortlinkError("Please enter a URL");
-            return;
-        }
-
-        if (!validateSpreadsheetUrl(shortlinkInput.trim())) {
-            setShortlinkError("Please enter a valid Google Sheets or Airtable URL");
-            return;
-        }
-
-        // Generate the shortlink
-        const encodedUrl = encodeURIComponent(shortlinkInput.trim());
-        const shortlink = `${window.location.origin}/?url=${encodedUrl}`;
-        setGeneratedShortlink(shortlink);
-        setShortlinkError("");
-    };
 
     const copyToClipboard = async () => {
         try {

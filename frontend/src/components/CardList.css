@@ -1,0 +1,59 @@
+.card-list-container {
+    padding: 0.5rem;
+}
+
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    overflow: hidden; /* To contain the header background */
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to the top */
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.card-body {
+    padding: 0.25rem 1rem; /* Reduced padding as items have their own */
+}
+
+.card-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    align-items: center;
+}
+
+.card-item:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-item-label {
+    font-weight: 600;
+    color: #495057;
+    margin-right: 1rem;
+    text-align: left;
+}
+
+.card-item-value {
+    text-align: right;
+    word-break: break-word;
+}
+
+.card-favorite-icon {
+    cursor: pointer;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+    margin-left: 1rem; /* Space between title and icon */
+}
